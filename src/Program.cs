@@ -30,7 +30,10 @@ namespace UniGet
 
         private static void ShowUsage()
         {
-            Console.WriteLine("Usage!");
+            Console.WriteLine("UniGet (https://github.com/SaladLab/UniGet)");
+            Console.WriteLine("usage: UniGet command [...]");
+            Console.WriteLine("command: restore");
+            Console.WriteLine("         pack");
         }
     }
 }
