@@ -53,7 +53,7 @@ namespace UniGet
                            .FirstOrDefault();
             if (guid == null)
                 throw new ArgumentException("Cannot extact guid from " + sourceMetaPath);
-            
+
             // asset
 
             if (File.Exists(sourcePath))
@@ -169,7 +169,8 @@ namespace UniGet
                     case ".dll":
                         return Tuple.Create(
                             guid,
-                            Encoding.UTF8.GetBytes(string.Join("\n", new[] {
+                            Encoding.UTF8.GetBytes(string.Join("\n", new[]
+                            {
                                 "fileFormatVersion: 2",
                                 "guid: " + guid,
                                 "MonoAssemblyImporter:",
@@ -182,7 +183,8 @@ namespace UniGet
                     case ".mdb":
                         return Tuple.Create(
                             guid,
-                            Encoding.UTF8.GetBytes(string.Join("\n", new[] {
+                            Encoding.UTF8.GetBytes(string.Join("\n", new[]
+                            {
                                 "fileFormatVersion: 2",
                                 "guid: " + guid,
                                 "DefaultImporter:",
@@ -200,7 +202,8 @@ namespace UniGet
             {
                 return Tuple.Create(
                     guid,
-                    Encoding.UTF8.GetBytes(string.Join("\n", new[] {
+                    Encoding.UTF8.GetBytes(string.Join("\n", new[]
+                    {
                         "fileFormatVersion: 2",
                         "guid: " + guid,
                         "folderAsset: yes",

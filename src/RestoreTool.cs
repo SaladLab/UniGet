@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using Newtonsoft.Json;
-using Octokit;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using CommandLine;
-using ICSharpCode.SharpZipLib.GZip;
-using ICSharpCode.SharpZipLib.Tar;
+using Octokit;
 
 namespace UniGet
 {
@@ -45,23 +43,37 @@ namespace UniGet
 
         private static async Task<int> Process(Options options)
         {
-            //var client = new GitHubClient(new ProductHeaderValue("octokit.samples"));
-            //var releases = await client.Repository.Release.GetAll("SaladLab", "Unity3D.UiManager");
-            //foreach (var release in releases)
-            //{
-            //    Console.WriteLine(release.Name);
-            //}
+            var p = Project.Load(options.ProjectFile);
+            var projectDir = Path.GetDirectoryName(options.ProjectFile);
 
-            //var releases = await GetGithubReleasesAsync("SaladLab", "Unity3D.UiManager");
-            //foreach (var release in releases)
-            //{
-            //    Console.WriteLine(release.Version.ToString() + ":" + JsonConvert.SerializeObject(release.DownloadUrls));
-            //}
+            if (p.Dependencies == null || p.Dependencies.Any() == false)
+            {
+                Console.WriteLine("No dependencies.");
+                return 0;
+            }
 
-            // await DownloadGithubReleaseAsync("SaladLab", "Json.Net.Unity3D", "Json-Net-Unity3D", new SemVer.Range(">=1.0.0"), false);
-            ExtractUnityPackage(
-                @"D:\Project\GitHub\UniGet\src\bin\Debug\SaladLab~Json.Net.Unity3D~8.0.3~Json-Net-Unity3D.unitypackage",
-                @"D:\Project\GitHub\UniGet\src\bin\Debug\Test", null);
+            foreach (var d in p.Dependencies)
+            {
+                Console.WriteLine("Restore: " + d.Key);
+
+                var parts = d.Value.Source.Split('/');
+                if (parts.Length < 3)
+                    throw new InvalidDataException("Cannot determine github repo information from url: " + d.Value.Source);
+
+                var packageFile = await DownloadGithubReleaseAsync(
+                    parts[parts.Length - 2], parts[parts.Length - 1],
+                    d.Key, new SemVer.Range(d.Value.Version));
+
+                Func<string, bool> filter = null;
+                if (d.Value.NoSample)
+                    filter = Extracter.MakeNoSampleFilter();
+                else if (d.Value.Include != null && d.Value.Include.Any())
+                    filter = Extracter.MakeInclusiveFilter(d.Value.Include.Select(f => new Regex(f)).ToList());
+                else if (d.Value.Exclude != null && d.Value.Exclude.Any())
+                    filter = Extracter.MakeExclusiveFilter(d.Value.Exclude.Select(f => new Regex(f)).ToList());
+
+                Extracter.ExtractUnityPackage(packageFile, projectDir, filter);
+            }
 
             return 0;
         }
@@ -160,28 +172,6 @@ namespace UniGet
             }
 
             return saveFileName;
-        }
-
-        private static void ExtractUnityPackage(string packageFile, string outputDir, Func<string, bool> filter)
-        {
-            var tempPath = GetTemporaryDirectory();
-
-            using (var fileStream = new FileStream(packageFile, System.IO.FileMode.Open, FileAccess.Read))
-            using (var gzipStream = new GZipInputStream(fileStream))
-            {
-                var tarArchive = TarArchive.CreateInputTarArchive(gzipStream);
-                tarArchive.ExtractContents(tempPath);
-                tarArchive.Close();
-            }
-
-            Directory.Delete(tempPath, true);
-        }
-
-        private static string GetTemporaryDirectory()
-        {
-            var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-            Directory.CreateDirectory(tempDirectory);
-            return tempDirectory;
         }
     }
 }
