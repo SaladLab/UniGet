@@ -113,8 +113,11 @@ namespace UniGet
                     {
                         var mdbFilePath = filePath + ".mdb";
 
-                        if (File.Exists(mdbFilePath) == false)
+                        if (File.Exists(mdbFilePath) == false ||
+                            File.GetLastWriteTime(filePath) > File.GetLastWriteTime(mdbFilePath))
+                        {
                             MdbTool.ConvertPdbToMdb(filePath);
+                        }
 
                         if (File.Exists(mdbFilePath))
                         {
