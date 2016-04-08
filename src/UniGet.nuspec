@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>@project@</id>
+    <title>@project@@title@</title>
+    <version>@build.number@</version>
+    <authors>Microsoft</authors>
+    <owners>Esun Kim</owners>
+    <description>The package manager for Unity3D.</description>
+    <projectUrl>https://github.com/SaladLab/UniGet</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/SaladLab/UniGet/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <releaseNotes>@releaseNotes@</releaseNotes>
+    <tags>unity3d package manager</tags>
+    @dependencies@
+    @references@
+  </metadata>
+  <files>
+    <!-- base path: /bin/nuget/work/id -->
+    <file src="..\..\..\..\src\bin\Release\UniGet.packed.exe" target="tools\UniGet.exe" />
+  </files>
+</package>

@@ -8,9 +8,10 @@ open BuildLib
 
 let solution = 
     initSolution
-        "./StubSolution.sln" "Release" 
-        [ { emptyProject with Name = "StubProject" 
-                              Folder = "./core/StubProject" } ]
+        "./UniGet.sln" "Release" 
+        [ { emptyProject with Name = "UniGet"
+                              Folder = "./src"
+                              Executable = true } ]
 
 Target "Clean" <| fun _ -> cleanBin
 
@@ -20,17 +21,16 @@ Target "Restore" <| fun _ -> restoreNugetPackages solution
 
 Target "Build" <| fun _ -> buildSolution solution
 
-Target "Test" <| fun _ -> testSolution solution
-
-Target "Cover" <| fun _ -> coverSolution solution
-    
-Target "Coverity" <| fun _ -> coveritySolution solution "SaladLab/StubSolution"
-
 Target "Nuget" <| fun _ ->
     createNugetPackages solution
     publishNugetPackages solution
 
 Target "CreateNuget" <| fun _ ->
+    // pack IncrementalCompiler.exe with dependent module dlls to packed one
+    let ilrepackExe = (getNugetPackage "ILRepack" "2.0.9") @@ "tools" @@ "ILRepack.exe"
+    Shell.Exec(ilrepackExe,
+               "/wildcards /out:UniGet.packed.exe UniGet.exe *.dll pdb2mdb.exe",
+               "./src/bin" @@ solution.Configuration) |> ignore
     createNugetPackages solution
 
 Target "PublishNuget" <| fun _ ->
@@ -45,15 +45,10 @@ Target "Help" <| fun _ ->
   ==> "AssemblyInfo"
   ==> "Restore"
   ==> "Build"
-  ==> "Test"
 
 "Build" ==> "Nuget"
 "Build" ==> "CreateNuget"
-"Build" ==> "Cover"
-"Restore" ==> "Coverity"
 
-"Test" ==> "CI"
-"Cover" ==> "CI"
 "Nuget" ==> "CI"
 
 RunTargetOrDefault "Help"
