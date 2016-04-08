@@ -1,0 +1,66 @@
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Coverity output
+cov-int/
+
+# Visual Studio 2015 cache/options directory
+.vs/
+
+# DNX
+project.lock.json
+artifacts/
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+
+# Visual Studio Code
+.vscode
+
+# Click-Once directory
+[Pp]ublish/
+
+# NuGet Packages
+*.nupkg
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+# Uncomment if necessary however generally it will be regenerated when needed
+#!**/packages/repositories.config
+
+# Windows Azure Build Output
+csx/
+*.build.csdef
+
+# Windows Store app package directory
+AppPackages/
+
+# Visual Studio cache files
+# files ending in .cache can be ignored
+*.[Cc]ache
+# but keep track of directories ending in .cache
+!*.[Cc]ache/
+
+# Fake
+.fake/
+
+# No APK
+*.apk
