@@ -12,7 +12,7 @@ namespace UniGet
     {
         public static void ExtractUnityPackage(string packageFile, string outputDir, Func<string, bool> filter)
         {
-            var tempPath = GetTemporaryDirectory();
+            var tempPath = CreateTemporaryDirectory();
 
             using (var fileStream = new FileStream(packageFile, System.IO.FileMode.Open, FileAccess.Read))
             using (var gzipStream = new GZipInputStream(fileStream))
@@ -80,7 +80,7 @@ namespace UniGet
             Directory.Delete(tempPath, true);
         }
 
-        private static string GetTemporaryDirectory()
+        public static string CreateTemporaryDirectory()
         {
             var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(tempDirectory);

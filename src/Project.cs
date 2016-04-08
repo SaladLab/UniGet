@@ -22,7 +22,7 @@ namespace UniGet
 
         public Dictionary<string, Dependency> Dependencies;
 
-        public List<string> Files;
+        public List<JToken> Files;
 
 #pragma warning restore 0649
 

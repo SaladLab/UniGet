@@ -16,6 +16,9 @@ namespace UniGet
         {
             [Value(0, Required = true, HelpText = "Project File")]
             public string ProjectFile { get; set; }
+
+            [Option('o', "output", HelpText = "Specifies the directory for the created unity package file. If not specified, uses the current directory.")]
+            public string OutputDirectory { get; set; }
         }
 
         public static int Run(params string[] args)
@@ -45,6 +48,7 @@ namespace UniGet
         {
             var p = Project.Load(options.ProjectFile);
             var projectDir = Path.GetDirectoryName(options.ProjectFile);
+            var outputDir = options.OutputDirectory ?? projectDir;
 
             if (p.Dependencies == null || p.Dependencies.Any() == false)
             {
@@ -72,7 +76,7 @@ namespace UniGet
                 else if (d.Value.Exclude != null && d.Value.Exclude.Any())
                     filter = Extracter.MakeExclusiveFilter(d.Value.Exclude.Select(f => new Regex(f)).ToList());
 
-                Extracter.ExtractUnityPackage(packageFile, projectDir, filter);
+                Extracter.ExtractUnityPackage(packageFile, outputDir, filter);
             }
 
             return 0;

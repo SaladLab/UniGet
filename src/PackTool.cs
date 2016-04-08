@@ -51,30 +51,54 @@ namespace UniGet
 
         private static int Process(Options options)
         {
-            var p = JObject.Parse(File.ReadAllText(options.ProjectFile));
+            var p = Project.Load(options.ProjectFile);
             var projectDir = Path.GetDirectoryName(options.ProjectFile);
             var outputDir = options.OutputDirectory ?? projectDir;
 
-            var idValue = p.GetValue("id");
-            if (idValue == null)
+            if (string.IsNullOrEmpty(p.Id))
                 throw new InvalidDataException("Cannot find id from project.");
-            var projectId = idValue.ToString();
 
-            var filesValue = (JArray)p.GetValue("files");
-            if (filesValue == null)
+            if (p.Files == null || p.Files.Any() == false)
                 throw new InvalidDataException("Cannot find files from project.");
 
-            var defaultTargetDir = "Assets/UnityPackages/" + projectId;
+            var defaultTargetDir = "Assets/UnityPackages/" + p.Id;
+            var tempDir = "";
 
             var files = new List<FileItem>();
-            foreach (var fileValue in filesValue)
+            foreach (var fileValue in p.Files)
             {
                 if (fileValue is JObject)
                 {
-                    // TODO: More
+                    // TODO: !
+                }
+                else if (fileValue.ToString().StartsWith("$"))
+                {
+                    var keyword = fileValue.ToString().ToLower();
+                    if (keyword != "$dependencies$")
+                    {
+                        throw new InvalidDataException("Wrong keyword: " + keyword);
+                    }
+
+                    tempDir = Extracter.CreateTemporaryDirectory();
+                    RestoreTool.Run(new[] { options.ProjectFile, "--output", tempDir });
+
+                    foreach (var file in Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories))
+                    {
+                        if (Path.GetExtension(file).ToLower() == ".meta")
+                        {
+                            var assetFile = file.Substring(0, file.Length - 5);
+                            files.Add(new FileItem
+                            {
+                                Source = assetFile,
+                                Target = assetFile.Substring(tempDir.Length + 1).Replace("\\", "/"),
+                            });
+                        }
+                    }
                 }
                 else
                 {
+                    // TODO: Pattern
+
                     var fileName = Path.GetFileName(fileValue.ToString());
                     var filePath = Path.Combine(projectDir, fileValue.ToString());
                     files.Add(new FileItem
@@ -108,7 +132,7 @@ namespace UniGet
             if (files.Any() == false)
                 throw new InvalidDataException("Nothing to add for files.");
 
-            var packagePath = Path.Combine(outputDir, projectId + ".unitypackage");
+            var packagePath = Path.Combine(outputDir, p.Id + ".unitypackage");
             using (var packer = new Packer(packagePath))
             {
                 var generatedDirs = new HashSet<string>();
@@ -130,6 +154,9 @@ namespace UniGet
                     packer.AddDirectoriesWithMetaGenerated(dir);
                 }
             }
+
+            if (string.IsNullOrEmpty(tempDir) == false)
+                Directory.Delete(tempDir, true);
 
             return 0;
         }
