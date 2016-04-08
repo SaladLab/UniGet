@@ -61,7 +61,7 @@ namespace UniGet
                 var asset = TarEntry.CreateTarEntry(guid + "/asset");
                 var assetFile = File.ReadAllBytes(sourcePath);
                 asset.Size = assetFile.Length;
-                asset.ModTime = File.GetLastWriteTime(sourcePath);
+                asset.ModTime = File.GetLastWriteTimeUtc(sourcePath);
                 _stream.PutNextEntry(asset);
                 _stream.Write(assetFile, 0, assetFile.Length);
                 _stream.CloseEntry();
@@ -72,7 +72,7 @@ namespace UniGet
                 var meta = TarEntry.CreateTarEntry(guid + "/asset.meta");
                 var metaFile = File.ReadAllBytes(sourceMetaPath);
                 meta.Size = metaFile.Length;
-                meta.ModTime = File.GetLastWriteTime(sourceMetaPath);
+                meta.ModTime = File.GetLastWriteTimeUtc(sourceMetaPath);
                 _stream.PutNextEntry(meta);
                 _stream.Write(metaFile, 0, metaFile.Length);
                 _stream.CloseEntry();
@@ -83,7 +83,7 @@ namespace UniGet
                 var pathname = TarEntry.CreateTarEntry(guid + "/pathname");
                 var pathnameFile = Encoding.UTF8.GetBytes(targetPathNormalized);
                 pathname.Size = pathnameFile.Length;
-                pathname.ModTime = File.GetLastWriteTime(sourcePath);
+                pathname.ModTime = File.GetLastWriteTimeUtc(sourcePath);
                 _stream.PutNextEntry(pathname);
                 _stream.Write(pathnameFile, 0, pathnameFile.Length);
                 _stream.CloseEntry();
@@ -113,7 +113,7 @@ namespace UniGet
                 var asset = TarEntry.CreateTarEntry(guid + "/asset");
                 var assetFile = File.ReadAllBytes(sourcePath);
                 asset.Size = assetFile.Length;
-                asset.ModTime = File.GetLastWriteTime(sourcePath);
+                asset.ModTime = File.GetLastWriteTimeUtc(sourcePath);
                 _stream.PutNextEntry(asset);
                 _stream.Write(assetFile, 0, assetFile.Length);
                 _stream.CloseEntry();
@@ -124,7 +124,7 @@ namespace UniGet
                 var meta = TarEntry.CreateTarEntry(guid + "/asset.meta");
                 var metaFile = metaData.Item2;
                 meta.Size = metaFile.Length;
-                meta.ModTime = File.GetLastWriteTime(sourcePath);
+                meta.ModTime = File.GetLastWriteTimeUtc(sourcePath);
                 _stream.PutNextEntry(meta);
                 _stream.Write(metaFile, 0, metaFile.Length);
                 _stream.CloseEntry();
@@ -135,7 +135,7 @@ namespace UniGet
                 var pathname = TarEntry.CreateTarEntry(guid + "/pathname");
                 var pathnameFile = Encoding.UTF8.GetBytes(targetPathNormalized);
                 pathname.Size = pathnameFile.Length;
-                pathname.ModTime = File.GetLastWriteTime(sourcePath);
+                pathname.ModTime = File.GetLastWriteTimeUtc(sourcePath);
                 _stream.PutNextEntry(pathname);
                 _stream.Write(pathnameFile, 0, pathnameFile.Length);
                 _stream.CloseEntry();
