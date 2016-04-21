@@ -87,19 +87,44 @@ namespace UniGet
             return tempDirectory;
         }
 
-        public static Func<string, bool> MakeNoSampleFilter()
-        {
-            return p => Path.GetDirectoryName(p).ToLower().Contains("sample") == false;
-        }
-
-        public static Func<string, bool> MakeInclusiveFilter(IList<Regex> filters)
+        public static Func<string, bool> MakeInclusiveFilter(IEnumerable<Regex> filters)
         {
             return p => filters.Any(f => f.IsMatch(p));
         }
 
-        public static Func<string, bool> MakeExclusiveFilter(IList<Regex> filters)
+        public static Func<string, bool> MakeExclusiveFilter(IEnumerable<Regex> filters)
         {
             return p => filters.All(f => f.IsMatch(p)) == false;
+        }
+
+        public static Func<string, bool> MakeExcludeSampleFilter()
+        {
+            return p => Path.GetDirectoryName(p).ToLower().Contains("sample") == false;
+        }
+
+        public static Func<string, bool> MakeFilter(List<string> includes, List<string> excludes)
+        {
+            var excludeSample = false;
+            var idx = excludes.FindIndex(f => f.ToLower() == "$sample$");
+            if (idx != -1)
+            {
+                excludeSample = true;
+                excludes = new List<string>(excludes);
+                excludes.RemoveAt(idx);
+            }
+
+            var excludeSampleFilter = excludeSample ? MakeExcludeSampleFilter() : null;
+            var excludeFilter = excludes.Any() ? MakeExclusiveFilter(excludes.Select(f => new Regex(f)).ToList()) : null;
+            var includeFilter = includes.Any() ? MakeInclusiveFilter(includes.Select(f => new Regex(f)).ToList()) : null;
+
+            return s =>
+            {
+                if (excludeSampleFilter != null && excludeSampleFilter(s))
+                    return false;
+                if (excludeFilter != null && excludeFilter(s))
+                    return false;
+                return (includeFilter != null) ? includeFilter(s) : true;
+            };
         }
     }
 }

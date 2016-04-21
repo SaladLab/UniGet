@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 using CommandLine;
 using Octokit;
 
@@ -69,12 +68,11 @@ namespace UniGet
                     d.Key, new SemVer.Range(d.Value.Version));
 
                 Func<string, bool> filter = null;
-                if (d.Value.NoSample)
-                    filter = Extracter.MakeNoSampleFilter();
-                else if (d.Value.Include != null && d.Value.Include.Any())
-                    filter = Extracter.MakeInclusiveFilter(d.Value.Include.Select(f => new Regex(f)).ToList());
-                else if (d.Value.Exclude != null && d.Value.Exclude.Any())
-                    filter = Extracter.MakeExclusiveFilter(d.Value.Exclude.Select(f => new Regex(f)).ToList());
+                if (d.Value.Includes != null || d.Value.Excludes != null)
+                {
+                    filter = Extracter.MakeFilter(d.Value.Includes ?? new List<string>(),
+                                                  d.Value.Excludes ?? new List<string>());
+                }
 
                 Extracter.ExtractUnityPackage(packageFile, outputDir, filter);
             }
@@ -92,7 +90,7 @@ namespace UniGet
         {
             var packageRelease = new List<PackageRelease>();
 
-            var client = new GitHubClient(new ProductHeaderValue("octokit.samples"));
+            var client = new GitHubClient(new ProductHeaderValue("uniget"));
             var githubReleases = await client.Repository.Release.GetAll(owner, repoName);
             foreach (var release in githubReleases)
             {

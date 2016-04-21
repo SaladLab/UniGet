@@ -11,16 +11,21 @@ namespace UniGet
 
         public string Id;
 
+        public string Title;                // Human readable name
+        public List<string> Authors;        // List of authors
+        public List<string> Owners;         // List of owners
+        public string Description;          // Description
+
         public class Dependency
         {
-            public string Version;
-            public string Source;
-            public bool NoSample;
-            public List<string> Include;
-            public List<string> Exclude;
+            public string Version;          // SemVer version (e.g. 1.5.20-beta)
+            public string Source;           // Download source (e.g. https://github.com/SaladLab/Json.Net.Unity3D)
+            public List<string> Includes;   // Include filters in regular expression
+            public List<string> Excludes;   // Exclude filters in regular expression ($sample$ for excluding sample directories)
         }
 
         public Dictionary<string, Dependency> Dependencies;
+        public Dictionary<string, Dependency> MergedDependencies;
 
         public List<JToken> Files;
 
