@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace UniGet
 {
@@ -49,7 +50,7 @@ namespace UniGet
             public bool MetaGenerated;
         }
 
-        private static int Process(Options options)
+        internal static int Process(Options options)
         {
             var p = Project.Load(options.ProjectFile);
             var projectDir = Path.GetDirectoryName(options.ProjectFile);
@@ -58,18 +59,23 @@ namespace UniGet
             if (string.IsNullOrEmpty(p.Id))
                 throw new InvalidDataException("Cannot find id from project.");
 
+            if (string.IsNullOrEmpty(p.Version))
+                throw new InvalidDataException("Cannot find version from project.");
+
             if (p.Files == null || p.Files.Any() == false)
                 throw new InvalidDataException("Cannot find files from project.");
 
             var defaultTargetDir = "Assets/UnityPackages/" + p.Id;
-            var tempDir = "";
+            var tempDir = Extracter.CreateTemporaryDirectory();
 
             var files = new List<FileItem>();
             foreach (var fileValue in p.Files)
             {
                 if (fileValue is JObject)
                 {
-                    // TODO: !
+                    var fileItem = fileValue.ToObject<FileItem>();
+                    var filePath = Path.Combine(projectDir, fileItem.Source);
+                    AddFiles(files, filePath, fileItem.Target);
                 }
                 else if (fileValue.ToString().StartsWith("$"))
                 {
@@ -79,7 +85,6 @@ namespace UniGet
                         throw new InvalidDataException("Wrong keyword: " + keyword);
                     }
 
-                    tempDir = Extracter.CreateTemporaryDirectory();
                     RestoreTool.Run(new[] { options.ProjectFile, "--output", tempDir });
 
                     foreach (var file in Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories))
@@ -97,38 +102,9 @@ namespace UniGet
                 }
                 else
                 {
-                    // TODO: Pattern
-
                     var fileName = Path.GetFileName(fileValue.ToString());
                     var filePath = Path.Combine(projectDir, fileValue.ToString());
-                    files.Add(new FileItem
-                    {
-                        Source = filePath,
-                        Target = defaultTargetDir + "/" + fileName,
-                        MetaGenerated = true
-                    });
-
-                    // if dll, add *.mdb. if not exist, generate one from pdb
-                    if (Path.GetExtension(fileName).ToLower() == ".dll")
-                    {
-                        var mdbFilePath = filePath + ".mdb";
-
-                        if (File.Exists(mdbFilePath) == false ||
-                            File.GetLastWriteTime(filePath) > File.GetLastWriteTime(mdbFilePath))
-                        {
-                            MdbTool.ConvertPdbToMdb(filePath);
-                        }
-
-                        if (File.Exists(mdbFilePath))
-                        {
-                            files.Add(new FileItem
-                            {
-                                Source = mdbFilePath,
-                                Target = defaultTargetDir + "/" + fileName + ".mdb",
-                                MetaGenerated = true
-                            });
-                        }
-                    }
+                    AddFiles(files, filePath, defaultTargetDir + "/" + fileName);
                 }
             }
 
@@ -139,11 +115,13 @@ namespace UniGet
             using (var packer = new Packer(packagePath))
             {
                 var generatedDirs = new HashSet<string>();
+
+                // add files
                 foreach (var file in files)
                 {
                     if (file.MetaGenerated)
                     {
-                        generatedDirs.Add(Path.GetDirectoryName(file.Target));
+                        generatedDirs.Add(Path.GetDirectoryName(file.Target).Replace("\\", "/"));
                         packer.AddWithMetaGenerated(file.Source, file.Target);
                     }
                     else
@@ -152,6 +130,18 @@ namespace UniGet
                     }
                 }
 
+                // add project.json
+                var projectPath = Path.Combine(tempDir, p.Id + ".unitypackage.json");
+                p.Files = null;
+                var jsonSettings = new JsonSerializerSettings
+                {
+                    DefaultValueHandling = DefaultValueHandling.Ignore,
+                };
+                File.WriteAllText(projectPath,  JsonConvert.SerializeObject(p, Formatting.Indented, jsonSettings));
+                generatedDirs.Add(defaultTargetDir);
+                packer.AddWithMetaGenerated(projectPath, defaultTargetDir + "/" + p.Id + ".unitypackage.json");
+
+                // add meta of directories
                 foreach (var dir in generatedDirs)
                 {
                     packer.AddDirectoriesWithMetaGenerated(dir);
@@ -162,6 +152,38 @@ namespace UniGet
                 Directory.Delete(tempDir, true);
 
             return 0;
+        }
+
+        internal static void AddFiles(List<FileItem> files, string source, string target)
+        {
+            files.Add(new FileItem
+            {
+                Source = source,
+                Target = target,
+                MetaGenerated = true
+            });
+
+            // if dll, add *.mdb. if not exist, generate one from pdb
+            if (Path.GetExtension(source).ToLower() == ".dll")
+            {
+                var mdbFilePath = source + ".mdb";
+
+                if (File.Exists(mdbFilePath) == false ||
+                    File.GetLastWriteTime(source) > File.GetLastWriteTime(mdbFilePath))
+                {
+                    MdbTool.ConvertPdbToMdb(source);
+                }
+
+                if (File.Exists(mdbFilePath))
+                {
+                    files.Add(new FileItem
+                    {
+                        Source = mdbFilePath,
+                        Target = target + ".mdb",
+                        MetaGenerated = true
+                    });
+                }
+            }
         }
     }
 }

@@ -194,8 +194,28 @@ namespace UniGet
                                 "  userData: "
                             })));
 
+                    case ".txt":
+                    case ".json":
+                        return Tuple.Create(
+                            guid,
+                            Encoding.UTF8.GetBytes(string.Join("\n", new[]
+                            {
+                                "fileFormatVersion: 2",
+                                "guid: " + guid,
+                                "TextScriptImporter:",
+                                "  userData: "
+                            })));
+
                     default:
-                        throw new InvalidOperationException("Cannot generate meta from " + sourcePath);
+                        return Tuple.Create(
+                            guid,
+                            Encoding.UTF8.GetBytes(string.Join("\n", new[]
+                            {
+                                "fileFormatVersion: 2",
+                                "guid: " + guid,
+                                "DefaultImporter:",
+                                "  userData: "
+                            })));
                 }
             }
             else

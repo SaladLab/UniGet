@@ -10,6 +10,7 @@ namespace UniGet
 #pragma warning disable 0649
 
         public string Id;
+        public string Version;
 
         public string Title;                // Human readable name
         public List<string> Authors;        // List of authors
@@ -28,6 +29,12 @@ namespace UniGet
         public Dictionary<string, Dependency> MergedDependencies;
 
         public List<JToken> Files;
+
+        internal class FileItem
+        {
+            public string Source;
+            public string Target;
+        }
 
 #pragma warning restore 0649
 

@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGet", "src/UniGet.csproj", "{358DBBA0-14DA-466C-BE39-9E9DFD2D7162}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGet", "src\UniGet\UniGet.csproj", "{358DBBA0-14DA-466C-BE39-9E9DFD2D7162}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGet.Tests", "src\UniGet.Tests\UniGet.Tests.csproj", "{D0147008-B369-4C39-9F5F-FE85AD8DC160}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{358DBBA0-14DA-466C-BE39-9E9DFD2D7162}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{358DBBA0-14DA-466C-BE39-9E9DFD2D7162}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{358DBBA0-14DA-466C-BE39-9E9DFD2D7162}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0147008-B369-4C39-9F5F-FE85AD8DC160}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0147008-B369-4C39-9F5F-FE85AD8DC160}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0147008-B369-4C39-9F5F-FE85AD8DC160}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0147008-B369-4C39-9F5F-FE85AD8DC160}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

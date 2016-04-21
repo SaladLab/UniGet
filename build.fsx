@@ -10,7 +10,7 @@ let solution =
     initSolution
         "./UniGet.sln" "Release" 
         [ { emptyProject with Name = "UniGet"
-                              Folder = "./src"
+                              Folder = "./src/UniGet"
                               Executable = true } ]
 
 Target "Clean" <| fun _ -> cleanBin
@@ -25,7 +25,9 @@ Target "Build" <| fun _ ->
     let ilrepackExe = (getNugetPackage "ILRepack" "2.0.9") @@ "tools" @@ "ILRepack.exe"
     Shell.Exec(ilrepackExe,
                "/wildcards /out:UniGet.packed.exe UniGet.exe *.dll pdb2mdb.exe",
-               "./src/bin" @@ solution.Configuration) |> ignore
+               "./src/UniGet/bin" @@ solution.Configuration) |> ignore
+
+Target "Test" <| fun _ -> testSolution solution
 
 Target "Nuget" <| fun _ ->
     createNugetPackages solution
@@ -46,10 +48,12 @@ Target "Help" <| fun _ ->
   ==> "AssemblyInfo"
   ==> "Restore"
   ==> "Build"
+  ==> "Test"
 
 "Build" ==> "Nuget"
 "Build" ==> "CreateNuget"
 
+"Test" ==> "CI"
 "Nuget" ==> "CI"
 
 RunTargetOrDefault "Help"
