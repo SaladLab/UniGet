@@ -112,7 +112,7 @@ namespace UniGet.Tests
             // Assert
 
             var unpackPath = TestHelper.CreateOutputPath("Unpack");
-            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/DepB-Full.unitypackage", unpackPath, null);
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/DepB.unitypackage", unpackPath, null);
         }
 
         private void AssertFileExists(params string[] names)
