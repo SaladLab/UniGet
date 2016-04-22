@@ -31,9 +31,11 @@ namespace UniGet.Tests
             AssertFileExistsWithMeta(packagePath, "Simple.unitypackage.json");
             AssertFileExistsWithMeta(packagePath, "Text1.txt");
             AssertFileExistsWithMeta(packagePath, "Text2.txt");
+            AssertFileExistsWithMeta(packagePath, "SubDir", "TextInSubDir.txt");
 
             AssertFileExists(unpackPath, "Assets", "UnityPackages.meta");
             AssertFileExists(unpackPath, "Assets", "UnityPackages", "Simple.meta");
+            AssertFileExists(unpackPath, "Assets", "UnityPackages", "Simple", "SubDir.meta");
         }
 
         [Fact]

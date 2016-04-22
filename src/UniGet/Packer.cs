@@ -89,7 +89,7 @@ namespace UniGet
                 _stream.CloseEntry();
             }
 
-            _addedPathSet.Add(sourcePath);
+            _addedPathSet.Add(targetPathNormalized);
             return true;
         }
 
@@ -141,7 +141,7 @@ namespace UniGet
                 _stream.CloseEntry();
             }
 
-            _addedPathSet.Add(sourcePath);
+            _addedPathSet.Add(targetPathNormalized);
             return true;
         }
 

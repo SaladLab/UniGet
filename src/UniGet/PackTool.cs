@@ -102,9 +102,8 @@ namespace UniGet
                 }
                 else
                 {
-                    var fileName = Path.GetFileName(fileValue.ToString());
                     var filePath = Path.Combine(projectDir, fileValue.ToString());
-                    AddFiles(files, filePath, defaultTargetDir + "/" + fileName);
+                    AddFiles(files, filePath, defaultTargetDir + "/");
                 }
             }
 
@@ -156,32 +155,52 @@ namespace UniGet
 
         internal static void AddFiles(List<FileItem> files, string source, string target)
         {
-            files.Add(new FileItem
+            foreach (var f in FileUtility.GetFiles(source, target))
             {
-                Source = source,
-                Target = target,
-                MetaGenerated = true
-            });
+                var srcFile = f.Item1;
+                var dstFile = f.Item2.Replace("\\", "/");
 
-            // if dll, add *.mdb. if not exist, generate one from pdb
-            if (Path.GetExtension(source).ToLower() == ".dll")
-            {
-                var mdbFilePath = source + ".mdb";
+                if (Path.GetExtension(srcFile).ToLower() == ".meta")
+                    continue;
 
-                if (File.Exists(mdbFilePath) == false ||
-                    File.GetLastWriteTime(source) > File.GetLastWriteTime(mdbFilePath))
-                {
-                    MdbTool.ConvertPdbToMdb(source);
-                }
-
-                if (File.Exists(mdbFilePath))
+                if (File.Exists(srcFile + ".meta"))
                 {
                     files.Add(new FileItem
                     {
-                        Source = mdbFilePath,
-                        Target = target + ".mdb",
+                        Source = srcFile,
+                        Target = dstFile,
+                    });
+                }
+                else
+                {
+                    files.Add(new FileItem
+                    {
+                        Source = srcFile,
+                        Target = dstFile,
                         MetaGenerated = true
                     });
+                }
+
+                // if dll, add *.mdb. if not exist, generate one from pdb
+                if (Path.GetExtension(srcFile).ToLower() == ".dll")
+                {
+                    var mdbFilePath = srcFile + ".mdb";
+
+                    if (File.Exists(mdbFilePath) == false ||
+                        File.GetLastWriteTime(srcFile) > File.GetLastWriteTime(mdbFilePath))
+                    {
+                        MdbTool.ConvertPdbToMdb(srcFile);
+                    }
+
+                    if (File.Exists(mdbFilePath))
+                    {
+                        files.Add(new FileItem
+                        {
+                            Source = mdbFilePath,
+                            Target = dstFile + ".mdb",
+                            MetaGenerated = true
+                        });
+                    }
                 }
             }
         }

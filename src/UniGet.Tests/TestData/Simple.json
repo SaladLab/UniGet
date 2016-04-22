@@ -2,7 +2,8 @@
   "id": "Simple",
   "version": "1.0.0",
   "files": [
-    "Files/Text1.txt",
-    "Files/Text2.txt",
+    "Files/Text?.txt",
+	"Files/**/*InSubDir.txt",
+	"Files/TextWithMeta.txt",
   ]
 }
