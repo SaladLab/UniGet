@@ -17,6 +17,6 @@
   </metadata>
   <files>
     <!-- base path: /bin/nuget/work/id -->
-    <file src="..\..\..\..\src\bin\Release\UniGet.packed.exe" target="tools\UniGet.exe" />
+    <file src="..\..\..\..\src\UniGet\bin\Release\UniGet.packed.exe" target="tools\UniGet.exe" />
   </files>
 </package>
