@@ -1,0 +1,8 @@
+{
+  "id": "Inherit",
+  "version": "1.0.0",
+  "description": "base",
+  "files": [
+    "Files/Text1.txt"
+  ]
+}

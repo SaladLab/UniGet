@@ -66,6 +66,29 @@ namespace UniGet.Tests
             AssertFileExists(unpackPath, "Assets", "UnityPackages", "FileItem.meta");
         }
 
+        [Fact]
+        private void Test_PackInherit()
+        {
+            // Act
+
+            var options = new PackTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("InheritChild.json"),
+                OutputDirectory = TestHelper.GetOutputPath()
+            };
+            PackTool.Process(options);
+
+            // Assert
+
+            var unpackPath = TestHelper.CreateOutputPath("Unpack");
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/InheritChild.unitypackage", unpackPath, null);
+
+            var packagePath = Path.Combine(unpackPath, "Assets", "UnityPackages", "InheritChild");
+            AssertFileExistsWithMeta(packagePath, "InheritChild.unitypackage.json");
+            AssertFileExistsWithMeta(packagePath, "Text1.txt");
+            AssertFileExistsWithMeta(packagePath, "Text2.txt");
+        }
+
         private void AssertFileExists(params string[] names)
         {
             Assert.True(File.Exists(Path.Combine(names)));
