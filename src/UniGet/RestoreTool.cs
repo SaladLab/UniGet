@@ -18,6 +18,9 @@ namespace UniGet
 
             [Option('o', "output", HelpText = "Specifies the directory for the created unity package file. If not specified, uses the current directory.")]
             public string OutputDirectory { get; set; }
+
+            [Option('l', "local", HelpText = "Specifies the directory for the local repository.")]
+            public string LocalRepositoryDirectory { get; set; }
         }
 
         public static int Run(params string[] args)
@@ -43,7 +46,7 @@ namespace UniGet
                 return 1;
         }
 
-        private static async Task<int> Process(Options options)
+        internal static async Task<int> Process(Options options)
         {
             var p = Project.Load(options.ProjectFile);
             var projectDir = Path.GetDirectoryName(options.ProjectFile);
@@ -59,13 +62,27 @@ namespace UniGet
             {
                 Console.WriteLine("Restore: " + d.Key);
 
-                var parts = d.Value.Source.Split('/');
-                if (parts.Length < 3)
-                    throw new InvalidDataException("Cannot determine github repo information from url: " + d.Value.Source);
+                var packageFile = "";
+                if (d.Value.Source == "local")
+                {
+                    packageFile = Path.Combine(options.LocalRepositoryDirectory ?? "", d.Key + ".unitypackage");
+                    if (File.Exists(packageFile) == false)
+                        throw new InvalidOperationException("Cannot find package from local repository: " + d.Key);
+                }
+                else if (d.Value.Source.StartsWith("https://github.com"))
+                {
+                    var parts = d.Value.Source.Split('/');
+                    if (parts.Length < 3)
+                        throw new InvalidDataException("Cannot determine github repo information from url: " + d.Value.Source);
 
-                var packageFile = await DownloadGithubReleaseAsync(
-                    parts[parts.Length - 2], parts[parts.Length - 1],
-                    d.Key, new SemVer.Range(d.Value.Version));
+                    packageFile = await DownloadGithubReleaseAsync(
+                        parts[parts.Length - 2], parts[parts.Length - 1],
+                        d.Key, new SemVer.Range(d.Value.Version));
+                }
+                else
+                {
+                    throw new InvalidOperationException("Cannot recognize source: " + d.Value.Source);
+                }
 
                 Func<string, bool> filter = null;
                 if (d.Value.Includes != null || d.Value.Excludes != null)

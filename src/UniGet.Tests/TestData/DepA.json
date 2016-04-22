@@ -1,0 +1,7 @@
+{
+  "id": "DepA",
+  "version": "1.0.0",
+  "files": [
+    "Files/FileA.txt"
+  ]
+}

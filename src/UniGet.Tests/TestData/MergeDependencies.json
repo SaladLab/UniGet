@@ -1,0 +1,8 @@
+{
+  "id": "FileItem",
+  "version": "1.0.0",
+  "files": [
+    { "source": "Files/Text1.txt", "target": "Assets/UnityPackages/1/Text.txt" },
+    { "source": "Files/Text2.txt", "target": "Assets/UnityPackages/2/Text.txt" }
+  ]
+}

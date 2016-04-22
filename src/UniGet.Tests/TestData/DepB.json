@@ -1,0 +1,10 @@
+{
+  "id": "DepB",
+  "version": "1.0.0",
+  "dependencies": {
+    "DepA": { "version": "1.0.0", "source": "local" }
+  },
+  "files": [
+    "Files/FileB.txt"
+  ]
+}

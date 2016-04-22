@@ -1,0 +1,7 @@
+{
+  "#base": "DepB.json",
+  "id": "DepB",
+  "files": [
+    "$dependencies$"
+  ]
+}

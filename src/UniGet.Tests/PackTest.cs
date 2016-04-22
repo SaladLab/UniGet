@@ -11,7 +11,7 @@ namespace UniGet.Tests
     public class PackTest
     {
         [Fact]
-        private void Test_PackSimple()
+        private void Test_Simple()
         {
             // Act
 
@@ -39,7 +39,7 @@ namespace UniGet.Tests
         }
 
         [Fact]
-        private void Test_PackFileItem()
+        private void Test_FileItem()
         {
             // Act
 
@@ -67,7 +67,7 @@ namespace UniGet.Tests
         }
 
         [Fact]
-        private void Test_PackInherit()
+        private void Test_InheritBaseProject()
         {
             // Act
 
@@ -87,6 +87,32 @@ namespace UniGet.Tests
             AssertFileExistsWithMeta(packagePath, "InheritChild.unitypackage.json");
             AssertFileExistsWithMeta(packagePath, "Text1.txt");
             AssertFileExistsWithMeta(packagePath, "Text2.txt");
+        }
+
+        [Fact]
+        private void Test_MergeDependencies()
+        {
+            // Arrange
+
+            PackTool.Process(new PackTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("DepA.json"),
+                OutputDirectory = TestHelper.GetOutputPath()
+            });
+
+            // Act
+
+            PackTool.Process(new PackTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("DepB-Full.json"),
+                OutputDirectory = TestHelper.GetOutputPath(),
+                LocalRepositoryDirectory = TestHelper.GetOutputPath()
+            });
+
+            // Assert
+
+            var unpackPath = TestHelper.CreateOutputPath("Unpack");
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/DepB-Full.unitypackage", unpackPath, null);
         }
 
         private void AssertFileExists(params string[] names)

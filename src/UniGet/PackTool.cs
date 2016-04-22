@@ -17,6 +17,9 @@ namespace UniGet
 
             [Option('o', "output", HelpText = "Specifies the directory for the created unity package file. If not specified, uses the current directory.")]
             public string OutputDirectory { get; set; }
+
+            [Option('l', "local", HelpText = "Specifies the directory for the local repository.")]
+            public string LocalRepositoryDirectory { get; set; }
         }
 
         public static int Run(params string[] args)
@@ -85,7 +88,12 @@ namespace UniGet
                         throw new InvalidDataException("Wrong keyword: " + keyword);
                     }
 
-                    RestoreTool.Run(new[] { options.ProjectFile, "--output", tempDir });
+                    RestoreTool.Process(new RestoreTool.Options
+                    {
+                        ProjectFile = options.ProjectFile,
+                        OutputDirectory = tempDir,
+                        LocalRepositoryDirectory = options.LocalRepositoryDirectory
+                    }).Wait();
 
                     foreach (var file in Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories))
                     {

@@ -1,0 +1,4 @@
+DepA
+DepB -> DepA
+DepC -> DepA
+DepD -> DepB, DepC
