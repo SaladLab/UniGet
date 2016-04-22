@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="Extracter.cs" />
     <Compile Include="FileUtility.cs" />
+    <Compile Include="GithubPackage.cs" />
     <Compile Include="GuidUtility.cs" />
     <Compile Include="Packer.cs" />
     <Compile Include="MdbTool.cs" />

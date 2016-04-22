@@ -20,7 +20,7 @@ namespace UniGet
         public class Dependency
         {
             public string Version;          // SemVer version (e.g. 1.5.20-beta)
-            public string Source;           // Download source (e.g. https://github.com/SaladLab/Json.Net.Unity3D)
+            public string Source;           // Download source (local, github:author/asset, nuget:package)
             public List<string> Includes;   // Include filters in regular expression
             public List<string> Excludes;   // Exclude filters in regular expression ($sample$ for excluding sample directories)
         }

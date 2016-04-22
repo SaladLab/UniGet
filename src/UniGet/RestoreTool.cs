@@ -123,17 +123,19 @@ namespace UniGet
                 if (File.Exists(packageFile) == false)
                     throw new InvalidOperationException("Cannot find package from local repository: " + projectId);
             }
-            else if (projectDependency.Source.StartsWith("https://github.com"))
+            else if (projectDependency.Source.StartsWith("github:"))
             {
-                var parts = projectDependency.Source.Split('/');
-                if (parts.Length < 3)
+                var parts = projectDependency.Source.Substring(7).Split('/');
+                if (parts.Length != 2)
                     throw new InvalidDataException("Cannot determine github repo information from url: " + projectDependency.Source);
 
-                var r = await DownloadGithubReleaseAsync(
-                    parts[parts.Length - 2], parts[parts.Length - 1],
-                    projectId, versionRange);
+                var r = await GithubPackage.DownloadPackageAsync(parts[0], parts[1], projectId, versionRange);
                 packageFile = r.Item1;
                 packageVersion = r.Item2;
+            }
+            else if (projectDependency.Source.StartsWith("nuget:"))
+            {
+                throw new NotImplementedException("nuget not yet!");
             }
             else
             {
@@ -176,102 +178,6 @@ namespace UniGet
                     }
                 }
             }
-        }
-
-        internal class PackageRelease
-        {
-            public SemVer.Version Version;
-            public List<Tuple<string, string>> DownloadUrls;
-        }
-
-        private static async Task<List<PackageRelease>> GetGithubReleasesAsync(string owner, string repoName)
-        {
-            var packageRelease = new List<PackageRelease>();
-
-            var client = new GitHubClient(new ProductHeaderValue("uniget"));
-            var githubReleases = await client.Repository.Release.GetAll(owner, repoName);
-            foreach (var release in githubReleases)
-            {
-                var ver = GetVersionFromRelease(release.TagName);
-                if (ver == null)
-                    continue;
-
-                var downloadUrls = new List<Tuple<string, string>>();
-                foreach (var a in release.Assets)
-                {
-                    if (Path.GetExtension(a.Name).ToLower() == ".unitypackage")
-                        downloadUrls.Add(Tuple.Create(a.Name, a.BrowserDownloadUrl));
-                }
-
-                if (downloadUrls.Any())
-                {
-                    packageRelease.Add(new PackageRelease
-                    {
-                        Version = ver,
-                        DownloadUrls = downloadUrls
-                    });
-                }
-            }
-
-            return packageRelease;
-        }
-
-        private static SemVer.Version GetVersionFromRelease(string tagName)
-        {
-            try
-            {
-                var i = tagName.ToList().FindIndex(c => char.IsDigit(c));
-                if (i != -1)
-                    return new SemVer.Version(tagName.Substring(i));
-            }
-            catch (Exception)
-            {
-            }
-            return null;
-        }
-
-        private static string GetPackageCacheRoot()
-        {
-            return Path.Combine(Environment.GetEnvironmentVariable("APPDATA"), "uniget");
-        }
-
-        private static async Task<Tuple<string, SemVer.Version>> DownloadGithubReleaseAsync(
-            string owner, string repoName, string assetName, SemVer.Range versionRange, bool force = false)
-        {
-            var releases = await GetGithubReleasesAsync(owner, repoName);
-            var release = releases.Where(r => versionRange.IsSatisfied(r.Version))
-                                  .OrderBy(r => r.Version).LastOrDefault();
-            if (release == null)
-                throw new ArgumentException("Cannot find release matched version range.");
-
-            var url = release.DownloadUrls.FirstOrDefault(d => Path.GetFileNameWithoutExtension(d.Item1) == assetName);
-            if (url == null)
-                throw new ArgumentException("Cannot find asset name.");
-
-            var cacheRootPath = GetPackageCacheRoot();
-            if (Directory.Exists(cacheRootPath) == false)
-                Directory.CreateDirectory(cacheRootPath);
-
-            var saveFileName = Path.Combine(
-                cacheRootPath,
-                string.Format("{0}~{1}~{2}~{3}.unitypackage", owner, repoName, release.Version, assetName));
-
-            if (File.Exists(saveFileName) == false || force)
-            {
-                using (var httpClient = new HttpClient())
-                using (var request = new HttpRequestMessage(HttpMethod.Get, url.Item2))
-                {
-                    var response = await httpClient.SendAsync(request);
-
-                    using (var contentStream = await response.Content.ReadAsStreamAsync())
-                    using (var fileStream = new FileStream(saveFileName, System.IO.FileMode.Create, FileAccess.Write))
-                    {
-                        await contentStream.CopyToAsync(fileStream);
-                    }
-                }
-            }
-
-            return Tuple.Create(saveFileName, release.Version);
         }
     }
 }
