@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using CommandLine;
-using Octokit;
 
 namespace UniGet
 {
@@ -96,32 +94,29 @@ namespace UniGet
             var packageFile = "";
             var packageVersion = new SemVer.Version(0, 0, 0);
 
-            if (projectDependency.Source == "local")
+            if (projectDependency.Source != "local" && string.IsNullOrEmpty(context.Options.LocalRepositoryDirectory) == false)
             {
-                var versions = new List<SemVer.Version>();
-
-                var files = Directory.GetFiles(context.Options.LocalRepositoryDirectory ?? "", projectId + ".*.unitypackage");
-                foreach (var file in files)
+                var packages = LocalPackage.GetPackages(context.Options.LocalRepositoryDirectory, projectId);
+                var package = packages.Where(p => versionRange.IsSatisfied(p.Item2)).OrderBy(p => p.Item2).LastOrDefault();
+                if (package != null)
                 {
-                    var verStr = Path.GetFileNameWithoutExtension(file).Substring(projectId.Length + 1);
-                    try
-                    {
-                        var ver = new SemVer.Version(verStr);
-                        if (versionRange.IsSatisfied(ver))
-                            versions.Add(ver);
-                    }
-                    catch (Exception)
-                    {
-                    }
+                    packageFile = package.Item1;
+                    packageVersion = package.Item2;
                 }
+            }
 
-                if (versions.Any() == false)
+            if (string.IsNullOrEmpty(packageFile) == false)
+            {
+            }
+            else if (projectDependency.Source == "local")
+            {
+                var packages = LocalPackage.GetPackages(context.Options.LocalRepositoryDirectory ?? "", projectId);
+                var package = packages.Where(p => versionRange.IsSatisfied(p.Item2)).OrderBy(p => p.Item2).LastOrDefault();
+                if (package == null)
                     throw new InvalidOperationException("Cannot find package from local repository: " + projectId);
 
-                packageVersion = versions.Max();
-                packageFile = Path.Combine(context.Options.LocalRepositoryDirectory ?? "", $"{projectId}.{packageVersion}.unitypackage");
-                if (File.Exists(packageFile) == false)
-                    throw new InvalidOperationException("Cannot find package from local repository: " + projectId);
+                packageFile = package.Item1;
+                packageVersion = package.Item2;
             }
             else if (projectDependency.Source.StartsWith("github:"))
             {

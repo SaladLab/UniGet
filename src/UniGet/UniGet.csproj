@@ -72,6 +72,7 @@
     <Compile Include="FileUtility.cs" />
     <Compile Include="GithubPackage.cs" />
     <Compile Include="GuidUtility.cs" />
+    <Compile Include="LocalPackage.cs" />
     <Compile Include="Packer.cs" />
     <Compile Include="MdbTool.cs" />
     <Compile Include="PackTool.cs" />
