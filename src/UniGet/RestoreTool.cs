@@ -58,43 +58,84 @@ namespace UniGet
                 return 0;
             }
 
+            var context = new ProcessContext
+            {
+                Options = options,
+                OutputDir = outputDir,
+                PackageMap = new Dictionary<string, SemVer.Version>()
+            };
             foreach (var d in p.Dependencies)
             {
-                Console.WriteLine("Restore: " + d.Key);
-
-                var packageFile = "";
-                if (d.Value.Source == "local")
-                {
-                    packageFile = Path.Combine(options.LocalRepositoryDirectory ?? "", d.Key + ".unitypackage");
-                    if (File.Exists(packageFile) == false)
-                        throw new InvalidOperationException("Cannot find package from local repository: " + d.Key);
-                }
-                else if (d.Value.Source.StartsWith("https://github.com"))
-                {
-                    var parts = d.Value.Source.Split('/');
-                    if (parts.Length < 3)
-                        throw new InvalidDataException("Cannot determine github repo information from url: " + d.Value.Source);
-
-                    packageFile = await DownloadGithubReleaseAsync(
-                        parts[parts.Length - 2], parts[parts.Length - 1],
-                        d.Key, new SemVer.Range(d.Value.Version));
-                }
-                else
-                {
-                    throw new InvalidOperationException("Cannot recognize source: " + d.Value.Source);
-                }
-
-                Func<string, bool> filter = null;
-                if (d.Value.Includes != null || d.Value.Excludes != null)
-                {
-                    filter = Extracter.MakeFilter(d.Value.Includes ?? new List<string>(),
-                                                  d.Value.Excludes ?? new List<string>());
-                }
-
-                Extracter.ExtractUnityPackage(packageFile, outputDir, filter);
+                await ProcessRecursive(d.Key, d.Value, context);
             }
 
             return 0;
+        }
+
+        private class ProcessContext
+        {
+            public Options Options;
+            public string OutputDir;
+            public Dictionary<string, SemVer.Version> PackageMap;
+        }
+
+        private static async Task ProcessRecursive(string projectId, Project.Dependency projectDependency, ProcessContext context)
+        {
+            Console.WriteLine("Restore: " + projectId);
+
+            // download package
+
+            var packageFile = "";
+            if (projectDependency.Source == "local")
+            {
+                packageFile = Path.Combine(context.Options.LocalRepositoryDirectory ?? "", projectId + ".unitypackage");
+                if (File.Exists(packageFile) == false)
+                    throw new InvalidOperationException("Cannot find package from local repository: " + projectId);
+            }
+            else if (projectDependency.Source.StartsWith("https://github.com"))
+            {
+                var parts = projectDependency.Source.Split('/');
+                if (parts.Length < 3)
+                    throw new InvalidDataException("Cannot determine github repo information from url: " + projectDependency.Source);
+
+                packageFile = await DownloadGithubReleaseAsync(
+                    parts[parts.Length - 2], parts[parts.Length - 1],
+                    projectId, new SemVer.Range(projectDependency.Version));
+            }
+            else
+            {
+                throw new InvalidOperationException("Cannot recognize source: " + projectDependency.Source);
+            }
+
+            Func<string, bool> filter = null;
+            if (projectDependency.Includes != null || projectDependency.Excludes != null)
+            {
+                filter = Extracter.MakeFilter(projectDependency.Includes ?? new List<string>(),
+                                              projectDependency.Excludes ?? new List<string>());
+            }
+
+            // exctract
+
+            Extracter.ExtractUnityPackage(packageFile, context.OutputDir, filter);
+            context.PackageMap.Add(projectId, new SemVer.Version(1, 0, 0));
+
+            // deep into dependencies
+
+            var projectFile = Path.Combine(context.OutputDir, $"Assets/UnityPackages/{projectId}/{projectId}.unitypackage.json");
+            if (File.Exists(projectFile))
+            {
+                var project = Project.Load(projectFile);
+                if (project.Dependencies != null)
+                {
+                    foreach (var d in project.Dependencies)
+                    {
+                        if (context.PackageMap.ContainsKey(d.Key) == false)
+                        {
+                            await ProcessRecursive(d.Key, d.Value, context);
+                        }
+                    }
+                }
+            }
         }
 
         internal class PackageRelease
