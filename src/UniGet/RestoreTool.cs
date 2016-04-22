@@ -40,36 +40,42 @@ namespace UniGet
 
             // Run process !
 
-            if (options != null)
-                return Process(options).Result;
-            else
+            if (options == null)
                 return 1;
+
+            var packageMap = Process(options).Result;
+            foreach (var p in packageMap)
+            {
+                Console.WriteLine($"Restored: {p.Key}: {p.Value}");
+            }
+            return 0;
         }
 
-        internal static async Task<int> Process(Options options)
+        internal static async Task<Dictionary<string, SemVer.Version>> Process(Options options)
         {
             var p = Project.Load(options.ProjectFile);
             var projectDir = Path.GetDirectoryName(options.ProjectFile);
             var outputDir = options.OutputDirectory ?? projectDir;
+            var packageMap = new Dictionary<string, SemVer.Version>();
 
             if (p.Dependencies == null || p.Dependencies.Any() == false)
             {
                 Console.WriteLine("No dependencies.");
-                return 0;
+                return packageMap;
             }
 
             var context = new ProcessContext
             {
                 Options = options,
                 OutputDir = outputDir,
-                PackageMap = new Dictionary<string, SemVer.Version>()
+                PackageMap = packageMap
             };
             foreach (var d in p.Dependencies)
             {
                 await ProcessRecursive(d.Key, d.Value, context);
             }
 
-            return 0;
+            return packageMap;
         }
 
         private class ProcessContext

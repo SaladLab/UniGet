@@ -88,12 +88,16 @@ namespace UniGet
                         throw new InvalidDataException("Wrong keyword: " + keyword);
                     }
 
-                    RestoreTool.Process(new RestoreTool.Options
+                    var mergedProjectMap = RestoreTool.Process(new RestoreTool.Options
                     {
                         ProjectFile = options.ProjectFile,
                         OutputDirectory = tempDir,
                         LocalRepositoryDirectory = options.LocalRepositoryDirectory
-                    }).Wait();
+                    }).Result;
+
+                    p.MergedDependencies = mergedProjectMap.ToDictionary(
+                        i => i.Key,
+                        i => new Project.Dependency { Version = i.Value.ToString() });
 
                     foreach (var file in Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories))
                     {
