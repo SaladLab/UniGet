@@ -70,7 +70,8 @@ namespace UniGet
             if (p.Files == null || p.Files.Any() == false)
                 throw new InvalidDataException("Cannot find files from project.");
 
-            var defaultTargetDir = "Assets/UnityPackages/" + p.Id;
+            var homeBaseDir = "Assets/UnityPackages";
+            var homeDir = homeBaseDir + "/" + p.Id;
             var tempDir = Extracter.CreateTemporaryDirectory();
 
             var files = new List<FileItem>();
@@ -80,8 +81,9 @@ namespace UniGet
                 {
                     var fileItem = fileValue.ToObject<FileItem>();
                     var filePath = Path.Combine(projectDir, fileItem.Source);
-                    var targetResolved = fileItem.Target.Replace("$home$", defaultTargetDir)
-                                                        .Replace("$homebase$", "Assets/UnityPackages");
+                    var targetResolved = fileItem.Target.Replace("$id$", p.Id)
+                                                        .Replace("$home$", homeDir)
+                                                        .Replace("$homebase$", homeBaseDir);
                     AddFiles(files, filePath, targetResolved);
                 }
                 else if (fileValue.ToString().StartsWith("$"))
@@ -119,7 +121,7 @@ namespace UniGet
                 else
                 {
                     var filePath = Path.Combine(projectDir, fileValue.ToString());
-                    AddFiles(files, filePath, defaultTargetDir + "/");
+                    AddFiles(files, filePath, homeDir + "/");
                 }
             }
 
@@ -145,16 +147,17 @@ namespace UniGet
                     }
                 }
 
+                p.Files = files.Select(f => JToken.FromObject(f.Target)).ToList();
+
                 // add project.json
                 var projectPath = Path.Combine(tempDir, p.Id + ".unitypackage.json");
-                p.Files = null;
                 var jsonSettings = new JsonSerializerSettings
                 {
                     DefaultValueHandling = DefaultValueHandling.Ignore,
                 };
                 File.WriteAllText(projectPath,  JsonConvert.SerializeObject(p, Formatting.Indented, jsonSettings));
-                generatedDirs.Add(defaultTargetDir);
-                packer.AddWithMetaGenerated(projectPath, defaultTargetDir + "/" + p.Id + ".unitypackage.json");
+                generatedDirs.Add(homeBaseDir);
+                packer.AddWithMetaGenerated(projectPath, homeBaseDir + "/" + p.Id + ".unitypackage.json");
 
                 // add meta of directories
                 foreach (var dir in generatedDirs)

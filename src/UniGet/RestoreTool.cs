@@ -154,7 +154,7 @@ namespace UniGet
 
             // deep into dependencies
 
-            var projectFile = Path.Combine(context.OutputDir, $"Assets/UnityPackages/{projectId}/{projectId}.unitypackage.json");
+            var projectFile = Path.Combine(context.OutputDir, $"Assets/UnityPackages/{projectId}.unitypackage.json");
             if (File.Exists(projectFile))
             {
                 var project = Project.Load(projectFile);

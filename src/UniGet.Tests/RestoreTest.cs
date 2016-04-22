@@ -33,9 +33,9 @@ namespace UniGet.Tests
 
             // Assert
 
-            var packagePath = Path.Combine(restorePath, "Assets", "UnityPackages", "DepA");
-            AssertFileExistsWithMeta(packagePath, "DepA.unitypackage.json");
-            AssertFileExistsWithMeta(packagePath, "FileA.txt");
+            var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
+            AssertFileExistsWithMeta(basePath, "DepA.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepA", "FileA.txt");
         }
 
         [Fact]
@@ -65,11 +65,11 @@ namespace UniGet.Tests
             // Assert
 
             var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
-            AssertFileExistsWithMeta(basePath, "DepA", "DepA.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepA.unitypackage.json");
             AssertFileExistsWithMeta(basePath, "DepA", "FileA.txt");
-            AssertFileExistsWithMeta(basePath, "DepB", "DepB.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepB.unitypackage.json");
             AssertFileExistsWithMeta(basePath, "DepB", "FileB.txt");
-            AssertFileExistsWithMeta(basePath, "DepC", "DepC.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepC.unitypackage.json");
             AssertFileExistsWithMeta(basePath, "DepC", "FileC.txt");
         }
 
@@ -100,13 +100,13 @@ namespace UniGet.Tests
             // Assert
 
             var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
-            AssertFileExistsWithMeta(basePath, "DepA", "DepA.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepA.unitypackage.json");
             AssertFileExistsWithMeta(basePath, "DepA", "FileA.txt");
-            AssertFileExistsWithMeta(basePath, "DepB", "DepB.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepB.unitypackage.json");
             AssertFileExistsWithMeta(basePath, "DepB", "FileB.txt");
-            AssertFileExistsWithMeta(basePath, "DepC", "DepC.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepC.unitypackage.json");
             AssertFileNotExists(basePath, "DepC", "FileC.txt");
-            AssertFileExistsWithMeta(basePath, "DepD", "DepD.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepD.unitypackage.json");
             AssertFileExistsWithMeta(basePath, "DepD", "FileD.txt");
             AssertFileNotExists(basePath, "DepD-Sample", "FileD.txt");
         }
