@@ -29,15 +29,15 @@ Target "Build" <| fun _ ->
 
 Target "Test" <| fun _ -> testSolution solution
 
-Target "Nuget" <| fun _ ->
-    createNugetPackages solution
-    publishNugetPackages solution
+Target "Cover" <| fun _ -> coverSolution solution
 
-Target "CreateNuget" <| fun _ ->
-    createNugetPackages solution
+Target "PackNuget" <| fun _ -> createNugetPackages solution
 
-Target "PublishNuget" <| fun _ ->
-    publishNugetPackages solution
+Target "Pack" <| fun _ -> ()
+
+Target "PublishNuget" <| fun _ -> publishNugetPackages solution
+
+Target "Publish" <| fun _ -> ()
 
 Target "CI" <| fun _ -> ()
 
@@ -50,10 +50,16 @@ Target "Help" <| fun _ ->
   ==> "Build"
   ==> "Test"
 
-"Build" ==> "Nuget"
-"Build" ==> "CreateNuget"
+"Build" ==> "Cover"
+  
+let isPublishOnly = getBuildParam "publishonly"
+
+"Build" ==> "PackNuget" =?> ("PublishNuget", isPublishOnly = "")
+"PackNuget" ==> "Pack"
+"PublishNuget" ==> "Publish"
 
 "Test" ==> "CI"
-"Nuget" ==> "CI"
+"Cover" ==> "CI"
+"Publish" ==> "CI"
 
 RunTargetOrDefault "Help"
