@@ -1,3 +1,9 @@
+## 0.2.1 (Released 2016/04/23)
+
+* Put package.json on Assets/UnityPackages
+* Get package version from github release filename
+* Search first local repo in building merged package
+
 ## 0.2.0 (Released 2016/04/22)
 
 * Add merged package
