@@ -6,3 +6,8 @@ environment:
 test: off
 build_script:
 - cmd: build.cmd ci nugetkey=%NUGETKEY% nugetpublishurl=https://www.myget.org/F/saladlab/api/v2/package nugetprerelease=%APPVEYOR_BUILD_NUMBER%
+artifacts:
+  - path: './bin/nuget/*.nupkg'
+    name: NugetPackage
+cache:
+- packages -> **\packages.config
