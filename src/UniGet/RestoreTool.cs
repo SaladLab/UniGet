@@ -91,10 +91,35 @@ namespace UniGet
 
             // download package
 
+            var versionRange = new SemVer.Range(projectDependency.Version);
+
             var packageFile = "";
+            var packageVersion = new SemVer.Version(0, 0, 0);
+
             if (projectDependency.Source == "local")
             {
-                packageFile = Path.Combine(context.Options.LocalRepositoryDirectory ?? "", projectId + ".unitypackage");
+                var versions = new List<SemVer.Version>();
+
+                var files = Directory.GetFiles(context.Options.LocalRepositoryDirectory ?? "", projectId + ".*.unitypackage");
+                foreach (var file in files)
+                {
+                    var verStr = Path.GetFileNameWithoutExtension(file).Substring(projectId.Length + 1);
+                    try
+                    {
+                        var ver = new SemVer.Version(verStr);
+                        if (versionRange.IsSatisfied(ver))
+                            versions.Add(ver);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                if (versions.Any() == false)
+                    throw new InvalidOperationException("Cannot find package from local repository: " + projectId);
+
+                packageVersion = versions.Max();
+                packageFile = Path.Combine(context.Options.LocalRepositoryDirectory ?? "", $"{projectId}.{packageVersion}.unitypackage");
                 if (File.Exists(packageFile) == false)
                     throw new InvalidOperationException("Cannot find package from local repository: " + projectId);
             }
@@ -104,9 +129,11 @@ namespace UniGet
                 if (parts.Length < 3)
                     throw new InvalidDataException("Cannot determine github repo information from url: " + projectDependency.Source);
 
-                packageFile = await DownloadGithubReleaseAsync(
+                var r = await DownloadGithubReleaseAsync(
                     parts[parts.Length - 2], parts[parts.Length - 1],
-                    projectId, new SemVer.Range(projectDependency.Version));
+                    projectId, versionRange);
+                packageFile = r.Item1;
+                packageVersion = r.Item2;
             }
             else
             {
@@ -123,7 +150,7 @@ namespace UniGet
             // exctract
 
             Extracter.ExtractUnityPackage(packageFile, context.OutputDir, filter);
-            context.PackageMap.Add(projectId, new SemVer.Version(1, 0, 0));
+            context.PackageMap.Add(projectId, packageVersion);
 
             // deep into dependencies
 
@@ -131,6 +158,13 @@ namespace UniGet
             if (File.Exists(projectFile))
             {
                 var project = Project.Load(projectFile);
+                if (project.MergedDependencies != null)
+                {
+                    foreach (var d in project.Dependencies)
+                    {
+                        context.PackageMap[d.Key] = new SemVer.Version(d.Value.Version);
+                    }
+                }
                 if (project.Dependencies != null)
                 {
                     foreach (var d in project.Dependencies)
@@ -201,7 +235,7 @@ namespace UniGet
             return Path.Combine(Environment.GetEnvironmentVariable("APPDATA"), "uniget");
         }
 
-        private static async Task<string> DownloadGithubReleaseAsync(
+        private static async Task<Tuple<string, SemVer.Version>> DownloadGithubReleaseAsync(
             string owner, string repoName, string assetName, SemVer.Range versionRange, bool force = false)
         {
             var releases = await GetGithubReleasesAsync(owner, repoName);
@@ -237,7 +271,7 @@ namespace UniGet
                 }
             }
 
-            return saveFileName;
+            return Tuple.Create(saveFileName, release.Version);
         }
     }
 }

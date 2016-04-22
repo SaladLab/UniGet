@@ -15,17 +15,16 @@ namespace UniGet.Tests
         {
             // Act
 
-            var options = new PackTool.Options
+            PackTool.Process(new PackTool.Options
             {
                 ProjectFile = TestHelper.GetDataPath("Simple.json"),
                 OutputDirectory = TestHelper.GetOutputPath()
-            };
-            PackTool.Process(options);
+            });
 
             // Assert
 
             var unpackPath = TestHelper.CreateOutputPath("Unpack");
-            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/Simple.unitypackage", unpackPath, null);
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/Simple.1.0.0.unitypackage", unpackPath, null);
 
             var packagePath = Path.Combine(unpackPath, "Assets", "UnityPackages", "Simple");
             AssertFileExistsWithMeta(packagePath, "Simple.unitypackage.json");
@@ -43,17 +42,16 @@ namespace UniGet.Tests
         {
             // Act
 
-            var options = new PackTool.Options
+            PackTool.Process(new PackTool.Options
             {
                 ProjectFile = TestHelper.GetDataPath("FileItem.json"),
                 OutputDirectory = TestHelper.GetOutputPath()
-            };
-            PackTool.Process(options);
+            });
 
             // Assert
 
             var unpackPath = TestHelper.CreateOutputPath("Unpack");
-            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/FileItem.unitypackage", unpackPath, null);
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/FileItem.1.0.0.unitypackage", unpackPath, null);
 
             var basePath = Path.Combine(unpackPath, "Assets", "UnityPackages");
             AssertFileExistsWithMeta(basePath, "FileItem", "FileItem.unitypackage.json");
@@ -71,17 +69,16 @@ namespace UniGet.Tests
         {
             // Act
 
-            var options = new PackTool.Options
+            PackTool.Process(new PackTool.Options
             {
                 ProjectFile = TestHelper.GetDataPath("InheritChild.json"),
                 OutputDirectory = TestHelper.GetOutputPath()
-            };
-            PackTool.Process(options);
+            });
 
             // Assert
 
             var unpackPath = TestHelper.CreateOutputPath("Unpack");
-            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/InheritChild.unitypackage", unpackPath, null);
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/InheritChild.1.0.0.unitypackage", unpackPath, null);
 
             var packagePath = Path.Combine(unpackPath, "Assets", "UnityPackages", "InheritChild");
             AssertFileExistsWithMeta(packagePath, "InheritChild.unitypackage.json");
@@ -112,7 +109,7 @@ namespace UniGet.Tests
             // Assert
 
             var unpackPath = TestHelper.CreateOutputPath("Unpack");
-            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/DepB.unitypackage", unpackPath, null);
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/DepB.1.0.0.unitypackage", unpackPath, null);
         }
 
         private void AssertFileExists(params string[] names)

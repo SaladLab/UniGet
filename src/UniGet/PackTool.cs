@@ -65,6 +65,8 @@ namespace UniGet
             if (string.IsNullOrEmpty(p.Version))
                 throw new InvalidDataException("Cannot find version from project.");
 
+            p.Version = new SemVer.Version(p.Version).ToString();
+
             if (p.Files == null || p.Files.Any() == false)
                 throw new InvalidDataException("Cannot find files from project.");
 
@@ -78,7 +80,9 @@ namespace UniGet
                 {
                     var fileItem = fileValue.ToObject<FileItem>();
                     var filePath = Path.Combine(projectDir, fileItem.Source);
-                    AddFiles(files, filePath, fileItem.Target);
+                    var targetResolved = fileItem.Target.Replace("$home$", defaultTargetDir)
+                                                        .Replace("$homebase$", "Assets/UnityPackages");
+                    AddFiles(files, filePath, targetResolved);
                 }
                 else if (fileValue.ToString().StartsWith("$"))
                 {
@@ -122,7 +126,7 @@ namespace UniGet
             if (files.Any() == false)
                 throw new InvalidDataException("Nothing to add for files.");
 
-            var packagePath = Path.Combine(outputDir, p.Id + ".unitypackage");
+            var packagePath = Path.Combine(outputDir, $"{p.Id}.{p.Version}.unitypackage");
             using (var packer = new Packer(packagePath))
             {
                 var generatedDirs = new HashSet<string>();
