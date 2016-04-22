@@ -73,9 +73,52 @@ namespace UniGet.Tests
             AssertFileExistsWithMeta(basePath, "DepC", "FileC.txt");
         }
 
+        [Fact]
+        private async Task Test_Filter()
+        {
+            // Arrange
+
+            foreach (var package in new[] { "DepA", "DepB", "DepC", "DepD" })
+            {
+                PackTool.Process(new PackTool.Options
+                {
+                    ProjectFile = TestHelper.GetDataPath(package + ".json"),
+                    OutputDirectory = TestHelper.GetOutputPath()
+                });
+            }
+
+            // Act
+
+            var restorePath = TestHelper.CreateOutputPath("Restore");
+            await RestoreTool.Process(new RestoreTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("Filter.json"),
+                OutputDirectory = restorePath,
+                LocalRepositoryDirectory = TestHelper.GetOutputPath()
+            });
+
+            // Assert
+
+            var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
+            AssertFileExistsWithMeta(basePath, "DepA", "DepA.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepA", "FileA.txt");
+            AssertFileExistsWithMeta(basePath, "DepB", "DepB.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepB", "FileB.txt");
+            AssertFileExistsWithMeta(basePath, "DepC", "DepC.unitypackage.json");
+            AssertFileNotExists(basePath, "DepC", "FileC.txt");
+            AssertFileExistsWithMeta(basePath, "DepD", "DepD.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepD", "FileD.txt");
+            AssertFileNotExists(basePath, "DepD-Sample", "FileD.txt");
+        }
+
         private void AssertFileExists(params string[] names)
         {
             Assert.True(File.Exists(Path.Combine(names)), "File: " + Path.Combine(names));
+        }
+
+        private void AssertFileNotExists(params string[] names)
+        {
+            Assert.False(File.Exists(Path.Combine(names)), "File: " + Path.Combine(names));
         }
 
         private void AssertFileExistsWithMeta(params string[] names)

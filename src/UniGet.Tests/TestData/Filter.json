@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "DepB": { 
+	  "version": "1.0.0",
+	  "source": "local",
+	  "includes": [ ".*\\.txt" ]
+	},
+	"DepC": {
+	  "version": "1.0.0",
+	  "source": "local",
+	  "excludes": [ ".*\\.txt" ]
+	},
+	"DepD": {
+	  "version": "1.0.0",
+	  "source": "local",
+	  "excludes": [ "$sample$" ]
+	}
+  }
+}

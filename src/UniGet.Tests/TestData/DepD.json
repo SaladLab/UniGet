@@ -6,6 +6,7 @@
 	"DepC": { "version": "1.0.0", "source": "local" }
   },
   "files": [
-    "Files/FileD.txt"
+    "Files/FileD.txt",
+	{ "source": "Files/FileD.txt", "target": "$homebase$/DepD-Sample/" }
   ]
 }

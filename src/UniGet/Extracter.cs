@@ -44,8 +44,11 @@ namespace UniGet
             var folderForAddedFile = new HashSet<string>();
             foreach (var file in files)
             {
-                if (filter != null && filter(file.Key) == false)
+                if (file.Key.EndsWith(".unitypackage.json") == false &&
+                    filter != null && filter(file.Key) == false)
+                {
                     continue;
+                }
 
                 // copy file
 
@@ -87,19 +90,14 @@ namespace UniGet
             return tempDirectory;
         }
 
-        public static Func<string, bool> MakeInclusiveFilter(IEnumerable<Regex> filters)
+        public static Func<string, bool> MakeFilter(IEnumerable<Regex> filters)
         {
             return p => filters.Any(f => f.IsMatch(p));
         }
 
-        public static Func<string, bool> MakeExclusiveFilter(IEnumerable<Regex> filters)
+        public static Func<string, bool> MakeSampleFilter()
         {
-            return p => filters.All(f => f.IsMatch(p)) == false;
-        }
-
-        public static Func<string, bool> MakeExcludeSampleFilter()
-        {
-            return p => Path.GetDirectoryName(p).ToLower().Contains("sample") == false;
+            return p => Path.GetDirectoryName(p).ToLower().Contains("sample");
         }
 
         public static Func<string, bool> MakeFilter(List<string> includes, List<string> excludes)
@@ -113,9 +111,9 @@ namespace UniGet
                 excludes.RemoveAt(idx);
             }
 
-            var excludeSampleFilter = excludeSample ? MakeExcludeSampleFilter() : null;
-            var excludeFilter = excludes.Any() ? MakeExclusiveFilter(excludes.Select(f => new Regex(f)).ToList()) : null;
-            var includeFilter = includes.Any() ? MakeInclusiveFilter(includes.Select(f => new Regex(f)).ToList()) : null;
+            var excludeSampleFilter = excludeSample ? MakeSampleFilter() : null;
+            var excludeFilter = excludes.Any() ? MakeFilter(excludes.Select(f => new Regex(f)).ToList()) : null;
+            var includeFilter = includes.Any() ? MakeFilter(includes.Select(f => new Regex(f)).ToList()) : null;
 
             return s =>
             {
