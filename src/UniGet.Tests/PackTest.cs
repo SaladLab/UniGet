@@ -28,15 +28,12 @@ namespace UniGet.Tests
             Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/Simple.unitypackage", unpackPath, null);
 
             var packagePath = Path.Combine(unpackPath, "Assets", "UnityPackages", "Simple");
-            Assert.True(File.Exists(Path.Combine(packagePath, "Simple.unitypackage.json")));
-            Assert.True(File.Exists(Path.Combine(packagePath, "Simple.unitypackage.json.meta")));
-            Assert.True(File.Exists(Path.Combine(packagePath, "Text1.txt")));
-            Assert.True(File.Exists(Path.Combine(packagePath, "Text1.txt.meta")));
-            Assert.True(File.Exists(Path.Combine(packagePath, "Text2.txt")));
-            Assert.True(File.Exists(Path.Combine(packagePath, "Text2.txt.meta")));
+            AssertFileExistsWithMeta(packagePath, "Simple.unitypackage.json");
+            AssertFileExistsWithMeta(packagePath, "Text1.txt");
+            AssertFileExistsWithMeta(packagePath, "Text2.txt");
 
-            Assert.True(File.Exists(Path.Combine(unpackPath, "Assets", "UnityPackages.meta")));
-            Assert.True(File.Exists(Path.Combine(unpackPath, "Assets", "UnityPackages", "Simple.meta")));
+            AssertFileExists(unpackPath, "Assets", "UnityPackages.meta");
+            AssertFileExists(unpackPath, "Assets", "UnityPackages", "Simple.meta");
         }
 
         [Fact]
@@ -57,17 +54,25 @@ namespace UniGet.Tests
             Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/FileItem.unitypackage", unpackPath, null);
 
             var basePath = Path.Combine(unpackPath, "Assets", "UnityPackages");
-            Assert.True(File.Exists(Path.Combine(basePath, "FileItem/FileItem.unitypackage.json")));
-            Assert.True(File.Exists(Path.Combine(basePath, "FileItem/FileItem.unitypackage.json.meta")));
-            Assert.True(File.Exists(Path.Combine(basePath, "1/Text.txt")));
-            Assert.True(File.Exists(Path.Combine(basePath, "1/Text.txt.meta")));
-            Assert.True(File.Exists(Path.Combine(basePath, "2/Text.txt")));
-            Assert.True(File.Exists(Path.Combine(basePath, "2/Text.txt.meta")));
+            AssertFileExistsWithMeta(basePath, "FileItem", "FileItem.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "1/Text.txt");
+            AssertFileExistsWithMeta(basePath, "2/Text.txt");
 
-            Assert.True(File.Exists(Path.Combine(unpackPath, "Assets", "UnityPackages.meta")));
-            Assert.True(File.Exists(Path.Combine(unpackPath, "Assets", "UnityPackages", "1.meta")));
-            Assert.True(File.Exists(Path.Combine(unpackPath, "Assets", "UnityPackages", "2.meta")));
-            Assert.True(File.Exists(Path.Combine(unpackPath, "Assets", "UnityPackages", "FileItem.meta")));
+            AssertFileExists(unpackPath, "Assets", "UnityPackages.meta");
+            AssertFileExists(unpackPath, "Assets", "UnityPackages", "1.meta");
+            AssertFileExists(unpackPath, "Assets", "UnityPackages", "2.meta");
+            AssertFileExists(unpackPath, "Assets", "UnityPackages", "FileItem.meta");
+        }
+
+        private void AssertFileExists(params string[] names)
+        {
+            Assert.True(File.Exists(Path.Combine(names)));
+        }
+
+        private void AssertFileExistsWithMeta(params string[] names)
+        {
+            Assert.True(File.Exists(Path.Combine(names)));
+            Assert.True(File.Exists(Path.Combine(names) + ".meta"));
         }
     }
 }
