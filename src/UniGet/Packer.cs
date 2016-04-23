@@ -158,7 +158,7 @@ namespace UniGet
             }
         }
 
-        private Tuple<string, byte[]> GenerateMeta(string sourcePath, string targetPath)
+        public static Tuple<string, byte[]> GenerateMeta(string sourcePath, string targetPath)
         {
             var guid = GenerateGuid(targetPath);
             if (File.Exists(sourcePath))
@@ -233,7 +233,7 @@ namespace UniGet
             }
         }
 
-        private string GenerateGuid(string path)
+        private static string GenerateGuid(string path)
         {
             var ns = new Guid("421A66D3-14FD-41FD-B965-7BA5B510DAB9");
             return GuidUtility.Create(ns, path).ToString("N").ToLower();

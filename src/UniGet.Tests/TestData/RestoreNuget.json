@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "protobuf-net": { "version": "2.0.0.668", "source": "nuget:net20" }
+  }
+}

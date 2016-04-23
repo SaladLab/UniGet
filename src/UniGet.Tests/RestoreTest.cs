@@ -111,6 +111,46 @@ namespace UniGet.Tests
             AssertFileNotExists(basePath, "DepD-Sample", "FileD.txt");
         }
 
+        [Fact]
+        private async Task Test_GithubPackage()
+        {
+            // Act
+
+            var restorePath = TestHelper.CreateOutputPath("Restore");
+            await RestoreTool.Process(new RestoreTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("RestoreGithub.json"),
+                OutputDirectory = restorePath
+            });
+
+            // Assert
+
+            var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
+            AssertFileExistsWithMeta(basePath, "NetLegacySupport.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "NetLegacySupport", "NetLegacySupport.Action.dll");
+            AssertFileExistsWithMeta(basePath, "NetLegacySupport", "NetLegacySupport.Action.dll.mdb");
+        }
+
+        [Fact]
+        private async Task Test_NugetPackage()
+        {
+            // Act
+
+            var restorePath = TestHelper.CreateOutputPath("Restore");
+            await RestoreTool.Process(new RestoreTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("RestoreNuget.json"),
+                OutputDirectory = restorePath
+            });
+
+            // Assert
+
+            var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
+            AssertFileExistsWithMeta(basePath, "protobuf-net.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "protobuf-net", "protobuf-net.dll");
+            AssertFileExistsWithMeta(basePath, "protobuf-net", "protobuf-net.dll.mdb");
+        }
+
         private void AssertFileExists(params string[] names)
         {
             Assert.True(File.Exists(Path.Combine(names)), "File: " + Path.Combine(names));

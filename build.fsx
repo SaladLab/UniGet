@@ -24,7 +24,7 @@ Target "Build" <| fun _ ->
     // pack UniGet.exe with dependent modules to packed one
     let ilrepackExe = (getNugetPackage "ILRepack" "2.0.9") @@ "tools" @@ "ILRepack.exe"
     Shell.Exec(ilrepackExe,
-               "/wildcards /out:UniGet.packed.exe UniGet.exe *.dll pdb2mdb.exe",
+               "/wildcards /out:UniGet.packed.exe UniGet.exe *.dll pdb2mdb.exe nuget.exe",
                "./src/UniGet/bin" @@ solution.Configuration) |> ignore
 
 Target "Test" <| fun _ -> testSolution solution

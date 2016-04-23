@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommandLine;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace UniGet
 {
@@ -93,6 +95,7 @@ namespace UniGet
 
             var packageFile = "";
             var packageVersion = new SemVer.Version(0, 0, 0);
+            var nugetTargetFrameworkMoniker = string.Empty;
 
             if (projectDependency.Source != "local" && string.IsNullOrEmpty(context.Options.LocalRepositoryDirectory) == false)
             {
@@ -130,7 +133,11 @@ namespace UniGet
             }
             else if (projectDependency.Source.StartsWith("nuget:"))
             {
-                throw new NotImplementedException("nuget not yet!");
+                nugetTargetFrameworkMoniker = projectDependency.Source.Substring(6);
+
+                var r = NugetPackage.DownloadPackage(projectId, projectDependency.Version);
+                packageFile = r.Item1;
+                packageVersion = r.Item2;
             }
             else
             {
@@ -144,34 +151,64 @@ namespace UniGet
                                               projectDependency.Excludes ?? new List<string>());
             }
 
-            // exctract
-
-            Extracter.ExtractUnityPackage(packageFile, context.OutputDir, filter);
             context.PackageMap.Add(projectId, packageVersion);
 
-            // deep into dependencies
-
-            var projectFile = Path.Combine(context.OutputDir, $"Assets/UnityPackages/{projectId}.unitypackage.json");
-            if (File.Exists(projectFile))
+            if (string.IsNullOrEmpty(nugetTargetFrameworkMoniker))
             {
-                var project = Project.Load(projectFile);
-                if (project.MergedDependencies != null)
+                // apply package
+
+                Extracter.ExtractUnityPackage(packageFile, context.OutputDir, filter);
+
+                // deep into dependencies
+
+                var projectFile = Path.Combine(context.OutputDir, $"Assets/UnityPackages/{projectId}.unitypackage.json");
+                if (File.Exists(projectFile))
                 {
-                    foreach (var d in project.Dependencies)
+                    var project = Project.Load(projectFile);
+                    if (project.MergedDependencies != null)
                     {
-                        context.PackageMap[d.Key] = new SemVer.Version(d.Value.Version);
-                    }
-                }
-                if (project.Dependencies != null)
-                {
-                    foreach (var d in project.Dependencies)
-                    {
-                        if (context.PackageMap.ContainsKey(d.Key) == false)
+                        foreach (var d in project.Dependencies)
                         {
-                            await ProcessRecursive(d.Key, d.Value, context);
+                            context.PackageMap[d.Key] = new SemVer.Version(d.Value.Version);
+                        }
+                    }
+                    if (project.Dependencies != null)
+                    {
+                        foreach (var d in project.Dependencies)
+                        {
+                            if (context.PackageMap.ContainsKey(d.Key) == false)
+                            {
+                                await ProcessRecursive(d.Key, d.Value, context);
+                            }
                         }
                     }
                 }
+            }
+            else
+            {
+                // apply package
+
+                NugetPackage.ExtractPackage(projectId, packageVersion.ToString(),
+                                            nugetTargetFrameworkMoniker, context.OutputDir, filter);
+
+                // create proxy project file
+
+                var outputDir = Path.Combine(context.OutputDir, $"Assets/UnityPackages/{projectId}");
+                var projectAssetPath = $"Assets/UnityPackages/{projectId}.unitypackage.json";
+                var projectFile = Path.Combine(context.OutputDir, projectAssetPath);
+                var p = new Project { Id = projectId, Version = packageVersion.ToString() };
+                p.Description = $"Nuget package (TFM:{nugetTargetFrameworkMoniker})";
+                p.Files = Directory.GetFiles(outputDir, "*")
+                                   .Where(f => Path.GetExtension(f).ToLower() != ".meta")
+                                   .Select(f => JToken.FromObject(f.Substring(outputDir.Length + 1).Replace("\\", "/"))).ToList();
+                var jsonSettings = new JsonSerializerSettings
+                {
+                    DefaultValueHandling = DefaultValueHandling.Ignore,
+                };
+                File.WriteAllText(projectFile, JsonConvert.SerializeObject(p, Formatting.Indented, jsonSettings));
+
+                File.WriteAllBytes(projectFile + ".meta",
+                                   Packer.GenerateMeta(projectFile, projectAssetPath).Item2);
             }
         }
     }
