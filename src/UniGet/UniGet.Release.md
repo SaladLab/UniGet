@@ -1,3 +1,7 @@
+## 0.2.2 (Released 2016/04/24)
+
+* Support Nuget package
+
 ## 0.2.1 (Released 2016/04/23)
 
 * Put package.json on Assets/UnityPackages
