@@ -210,7 +210,7 @@ namespace UniGet
                             Extra = extra,
                         });
 
-                        packer.AddWithMetaGenerated(srcFile, dstFile + ".mdb");
+                        packer.AddWithMetaGenerated(mdbFilePath, dstFile + ".mdb");
                     }
                 }
             }
