@@ -24,7 +24,7 @@ namespace UniGet.Tests
             // Assert
 
             var unpackPath = TestHelper.CreateOutputPath("Unpack");
-            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/Simple.1.0.0.unitypackage", unpackPath, null);
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/Simple.1.0.0.unitypackage", unpackPath, "Simple", true, true);
 
             var packagePath = Path.Combine(unpackPath, "Assets", "UnityPackages", "Simple");
             AssertFileExistsWithMeta(packagePath, "../Simple.unitypackage.json");
@@ -51,7 +51,7 @@ namespace UniGet.Tests
             // Assert
 
             var unpackPath = TestHelper.CreateOutputPath("Unpack");
-            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/FileItem.1.0.0.unitypackage", unpackPath, null);
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/FileItem.1.0.0.unitypackage", unpackPath, "FileItem", true, true);
 
             var basePath = Path.Combine(unpackPath, "Assets", "UnityPackages");
             AssertFileExistsWithMeta(basePath, "FileItem.unitypackage.json");
@@ -77,7 +77,7 @@ namespace UniGet.Tests
             // Assert
 
             var unpackPath = TestHelper.CreateOutputPath("Unpack");
-            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/InheritChild.1.0.0.unitypackage", unpackPath, null);
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/InheritChild.1.0.0.unitypackage", unpackPath, "InheritChild", true, true);
 
             var packagePath = Path.Combine(unpackPath, "Assets", "UnityPackages", "InheritChild");
             AssertFileExistsWithMeta(packagePath, "../InheritChild.unitypackage.json");
@@ -108,7 +108,7 @@ namespace UniGet.Tests
             // Assert
 
             var unpackPath = TestHelper.CreateOutputPath("Unpack");
-            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/DepB.1.0.0.unitypackage", unpackPath, null);
+            Extracter.ExtractUnityPackage(TestHelper.GetOutputPath() + "/DepB.1.0.0.unitypackage", unpackPath, "DepB", true, true);
         }
 
         private void AssertFileExists(params string[] names)

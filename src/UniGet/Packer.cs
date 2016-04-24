@@ -149,11 +149,12 @@ namespace UniGet
         {
             while (true)
             {
-                var parentPath = Path.GetDirectoryName(targetPath);
+                var parentPath = Path.GetDirectoryName(targetPath).Replace("\\", "/");
                 if (string.IsNullOrEmpty(parentPath))
                     return;
 
-                AddWithMetaGenerated(".", targetPath);
+                if (AddWithMetaGenerated(".", targetPath) == false)
+                    return;
                 targetPath = parentPath;
             }
         }

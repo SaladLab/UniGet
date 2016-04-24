@@ -46,13 +46,6 @@ namespace UniGet
                 return 1;
         }
 
-        internal class FileItem
-        {
-            public string Source;
-            public string Target;
-            public bool MetaGenerated;
-        }
-
         internal static int Process(Options options)
         {
             var p = Project.Load(options.ProjectFile);
@@ -74,96 +67,92 @@ namespace UniGet
             var homeDir = homeBaseDir + "/" + p.Id;
             var tempDir = Extracter.CreateTemporaryDirectory();
 
-            var files = new List<FileItem>();
-            foreach (var fileValue in p.Files)
-            {
-                if (fileValue is JObject)
-                {
-                    var fileItem = fileValue.ToObject<FileItem>();
-                    var filePath = Path.Combine(projectDir, fileItem.Source);
-                    var targetResolved = fileItem.Target.Replace("$id$", p.Id)
-                                                        .Replace("$home$", homeDir)
-                                                        .Replace("$homebase$", homeBaseDir);
-                    AddFiles(files, filePath, targetResolved);
-                }
-                else if (fileValue.ToString().StartsWith("$"))
-                {
-                    var keyword = fileValue.ToString().ToLower();
-                    if (keyword != "$dependencies$")
-                    {
-                        throw new InvalidDataException("Wrong keyword: " + keyword);
-                    }
-
-                    var mergedProjectMap = RestoreTool.Process(new RestoreTool.Options
-                    {
-                        ProjectFile = options.ProjectFile,
-                        OutputDirectory = tempDir,
-                        LocalRepositoryDirectory = options.LocalRepositoryDirectory
-                    }).Result;
-
-                    p.MergedDependencies = mergedProjectMap.ToDictionary(
-                        i => i.Key,
-                        i => new Project.Dependency { Version = i.Value.ToString() });
-
-                    foreach (var file in Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories))
-                    {
-                        if (Path.GetExtension(file).ToLower() == ".meta")
-                        {
-                            var assetFile = file.Substring(0, file.Length - 5);
-                            files.Add(new FileItem
-                            {
-                                Source = assetFile,
-                                Target = assetFile.Substring(tempDir.Length + 1).Replace("\\", "/"),
-                            });
-                        }
-                    }
-                }
-                else
-                {
-                    var filePath = Path.Combine(projectDir, fileValue.ToString());
-                    AddFiles(files, filePath, homeDir + "/");
-                }
-            }
-
-            if (files.Any() == false)
-                throw new InvalidDataException("Nothing to add for files.");
-
+            var files = new List<Project.FileItem>();
             var packagePath = Path.Combine(outputDir, $"{p.Id}.{p.Version}.unitypackage");
             using (var packer = new Packer(packagePath))
             {
-                var generatedDirs = new HashSet<string>();
-
-                // add files
-                foreach (var file in files)
+                foreach (var fileValue in p.Files)
                 {
-                    if (file.MetaGenerated)
+                    if (fileValue is JObject)
                     {
-                        generatedDirs.Add(Path.GetDirectoryName(file.Target).Replace("\\", "/"));
-                        packer.AddWithMetaGenerated(file.Source, file.Target);
+                        var fileItem = fileValue.ToObject<Project.FileItem>();
+                        var filePath = Path.Combine(projectDir, fileItem.Source);
+                        var targetResolved = fileItem.Target.Replace("$id$", p.Id)
+                                                            .Replace("$home$", homeDir)
+                                                            .Replace("$homebase$", homeBaseDir);
+                        AddFiles(packer, files, filePath, targetResolved, fileItem.Extra);
+                    }
+                    else if (fileValue.ToString().StartsWith("$"))
+                    {
+                        var keyword = fileValue.ToString().ToLower();
+                        if (keyword != "$dependencies$")
+                        {
+                            throw new InvalidDataException("Wrong keyword: " + keyword);
+                        }
+
+                        var mergedProjectMap = RestoreTool.Process(new RestoreTool.Options
+                        {
+                            ProjectFile = options.ProjectFile,
+                            OutputDirectory = tempDir,
+                            LocalRepositoryDirectory = options.LocalRepositoryDirectory
+                        }).Result;
+
+                        p.MergedDependencies = mergedProjectMap.ToDictionary(
+                            i => i.Key,
+                            i => new Project.Dependency { Version = i.Value.ToString() });
+
+                        foreach (var file in Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories))
+                        {
+                            if (Path.GetExtension(file).ToLower() == ".meta")
+                            {
+                                var assetFile = file.Substring(0, file.Length - 5);
+                                var targetFile = assetFile.Substring(tempDir.Length + 1).Replace("\\", "/");
+
+                                // NOTE:
+                                // if Extra field of file in merged dependencies,
+                                // read *.unitypackage.json and use data from them.
+
+                                if (File.Exists(assetFile))
+                                {
+                                    files.Add(new Project.FileItem
+                                    {
+                                        Source = assetFile,
+                                        Target = targetFile,
+                                        Merged = true
+                                    });
+                                }
+
+                                packer.Add(assetFile, targetFile);
+                            }
+                        }
                     }
                     else
                     {
-                        packer.Add(file.Source, file.Target);
+                        var filePath = Path.Combine(projectDir, fileValue.ToString());
+                        AddFiles(packer, files, filePath, homeDir + "/", false);
                     }
                 }
 
-                p.Files = files.Select(f => JToken.FromObject(f.Target)).ToList();
+                if (files.Any() == false)
+                    throw new InvalidDataException("Nothing to add for files.");
 
-                // add project.json
-                var projectPath = Path.Combine(tempDir, p.Id + ".unitypackage.json");
+                // make files
+
                 var jsonSettings = new JsonSerializerSettings
                 {
                     DefaultValueHandling = DefaultValueHandling.Ignore,
                 };
-                File.WriteAllText(projectPath,  JsonConvert.SerializeObject(p, Formatting.Indented, jsonSettings));
-                generatedDirs.Add(homeBaseDir);
-                packer.AddWithMetaGenerated(projectPath, homeBaseDir + "/" + p.Id + ".unitypackage.json");
+                p.Files = files.Select(
+                    f => (f.Extra || f.Merged)
+                        ? JToken.FromObject(new Project.FileItem { Target = f.Target, Extra = f.Extra, Merged = f.Merged }, JsonSerializer.Create(jsonSettings))
+                        : JToken.FromObject(f.Target)).ToList();
 
-                // add meta of directories
-                foreach (var dir in generatedDirs)
-                {
-                    packer.AddDirectoriesWithMetaGenerated(dir);
-                }
+                // add project.json
+
+                var projectPath = Path.Combine(tempDir, p.Id + ".unitypackage.json");
+                File.WriteAllText(projectPath,  JsonConvert.SerializeObject(p, Formatting.Indented, jsonSettings));
+                packer.AddWithMetaGenerated(projectPath, homeBaseDir + "/" + p.Id + ".unitypackage.json");
+                packer.AddDirectoriesWithMetaGenerated(homeBaseDir);
             }
 
             if (string.IsNullOrEmpty(tempDir) == false)
@@ -172,8 +161,10 @@ namespace UniGet
             return 0;
         }
 
-        internal static void AddFiles(List<FileItem> files, string source, string target)
+        internal static void AddFiles(Packer packer, List<Project.FileItem> files, string source, string target, bool extra)
         {
+            var dirs = new HashSet<string>();
+
             foreach (var f in FileUtility.GetFiles(source, target))
             {
                 var srcFile = f.Item1;
@@ -182,25 +173,24 @@ namespace UniGet
                 if (Path.GetExtension(srcFile).ToLower() == ".meta")
                     continue;
 
+                // add file
+
+                files.Add(new Project.FileItem
+                {
+                    Source = srcFile,
+                    Target = dstFile,
+                    Extra = extra,
+                });
+
                 if (File.Exists(srcFile + ".meta"))
-                {
-                    files.Add(new FileItem
-                    {
-                        Source = srcFile,
-                        Target = dstFile,
-                    });
-                }
+                    packer.Add(srcFile, dstFile);
                 else
-                {
-                    files.Add(new FileItem
-                    {
-                        Source = srcFile,
-                        Target = dstFile,
-                        MetaGenerated = true
-                    });
-                }
+                    packer.AddWithMetaGenerated(srcFile, dstFile);
+
+                dirs.Add(Path.GetDirectoryName(dstFile).Replace("\\", "/"));
 
                 // if dll, add *.mdb. if not exist, generate one from pdb
+
                 if (Path.GetExtension(srcFile).ToLower() == ".dll")
                 {
                     var mdbFilePath = srcFile + ".mdb";
@@ -213,14 +203,21 @@ namespace UniGet
 
                     if (File.Exists(mdbFilePath))
                     {
-                        files.Add(new FileItem
+                        files.Add(new Project.FileItem
                         {
                             Source = mdbFilePath,
                             Target = dstFile + ".mdb",
-                            MetaGenerated = true
+                            Extra = extra,
                         });
+
+                        packer.AddWithMetaGenerated(srcFile, dstFile);
                     }
                 }
+            }
+
+            foreach (var dir in dirs)
+            {
+                packer.AddDirectoriesWithMetaGenerated(dir);
             }
         }
     }

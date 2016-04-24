@@ -38,7 +38,7 @@ namespace UniGet
         }
 
         public static void ExtractPackage(
-            string packageId, string version, string tarketFrameworkMoniker, string outputDir, Func<string, bool> filter)
+            string packageId, string version, string tarketFrameworkMoniker, string outputDir)
         {
             var cacheRootPath = GetPackageCacheRoot();
 
@@ -57,8 +57,6 @@ namespace UniGet
             foreach (var file in Directory.GetFiles(libPath, "*.dll"))
             {
                 var fileName = Path.GetFileName(file);
-                if (filter != null && filter(fileName) == false)
-                    continue;
 
                 var mdbFile = file + ".mdb";
                 if (File.Exists(mdbFile) == false)

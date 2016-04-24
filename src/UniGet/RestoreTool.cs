@@ -144,20 +144,14 @@ namespace UniGet
                 throw new InvalidOperationException("Cannot recognize source: " + projectDependency.Source);
             }
 
-            Func<string, bool> filter = null;
-            if (projectDependency.Includes != null || projectDependency.Excludes != null)
-            {
-                filter = Extracter.MakeFilter(projectDependency.Includes ?? new List<string>(),
-                                              projectDependency.Excludes ?? new List<string>());
-            }
-
             context.PackageMap.Add(projectId, packageVersion);
 
             if (string.IsNullOrEmpty(nugetTargetFrameworkMoniker))
             {
                 // apply package
 
-                Extracter.ExtractUnityPackage(packageFile, context.OutputDir, filter);
+                Extracter.ExtractUnityPackage(packageFile, context.OutputDir,
+                                              projectId, projectDependency.IncludeExtra, projectDependency.IncludeMerged);
 
                 // deep into dependencies
 
@@ -189,7 +183,7 @@ namespace UniGet
                 // apply package
 
                 NugetPackage.ExtractPackage(projectId, packageVersion.ToString(),
-                                            nugetTargetFrameworkMoniker, context.OutputDir, filter);
+                                            nugetTargetFrameworkMoniker, context.OutputDir);
 
                 // create proxy project file
 

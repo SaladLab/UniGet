@@ -17,7 +17,7 @@ namespace UniGet.Tests
 
             PackTool.Process(new PackTool.Options
             {
-                ProjectFile = TestHelper.GetDataPath("DepA.json"),
+                ProjectFile = TestHelper.GetDataPath("Simple.json"),
                 OutputDirectory = TestHelper.GetOutputPath()
             });
 
@@ -26,16 +26,55 @@ namespace UniGet.Tests
             var restorePath = TestHelper.CreateOutputPath("Restore");
             await RestoreTool.Process(new RestoreTool.Options
             {
-                ProjectFile = TestHelper.GetDataPath("DepB.json"),
+                ProjectFile = TestHelper.GetDataPath("SimpleRestore.json"),
                 OutputDirectory = restorePath,
                 LocalRepositoryDirectory = TestHelper.GetOutputPath()
             });
 
             // Assert
 
-            var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
-            AssertFileExistsWithMeta(basePath, "DepA.unitypackage.json");
-            AssertFileExistsWithMeta(basePath, "DepA", "FileA.txt");
+            var packagePath = Path.Combine(restorePath, "Assets", "UnityPackages", "Simple");
+            AssertFileExistsWithMeta(packagePath, "../Simple.unitypackage.json");
+            AssertFileExistsWithMeta(packagePath, "Text1.txt");
+            AssertFileExistsWithMeta(packagePath, "Text2.txt");
+            AssertFileNotExists(packagePath, "SubDir", "TextInSubDir.txt");
+
+            AssertFileExists(restorePath, "Assets", "UnityPackages.meta");
+            AssertFileExists(restorePath, "Assets", "UnityPackages", "Simple.meta");
+        }
+
+        [Fact]
+        private async Task Test_SimpleWithExtra()
+        {
+            // Arrange
+
+            PackTool.Process(new PackTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("Simple.json"),
+                OutputDirectory = TestHelper.GetOutputPath()
+            });
+
+            // Act
+
+            var restorePath = TestHelper.CreateOutputPath("Restore");
+            await RestoreTool.Process(new RestoreTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("SimpleRestoreWithExtra.json"),
+                OutputDirectory = restorePath,
+                LocalRepositoryDirectory = TestHelper.GetOutputPath()
+            });
+
+            // Assert
+
+            var packagePath = Path.Combine(restorePath, "Assets", "UnityPackages", "Simple");
+            AssertFileExistsWithMeta(packagePath, "../Simple.unitypackage.json");
+            AssertFileExistsWithMeta(packagePath, "Text1.txt");
+            AssertFileExistsWithMeta(packagePath, "Text2.txt");
+            AssertFileExistsWithMeta(packagePath, "SubDir", "TextInSubDir.txt");
+
+            AssertFileExists(restorePath, "Assets", "UnityPackages.meta");
+            AssertFileExists(restorePath, "Assets", "UnityPackages", "Simple.meta");
+            AssertFileExists(restorePath, "Assets", "UnityPackages", "Simple", "SubDir.meta");
         }
 
         [Fact]
@@ -71,44 +110,6 @@ namespace UniGet.Tests
             AssertFileExistsWithMeta(basePath, "DepB", "FileB.txt");
             AssertFileExistsWithMeta(basePath, "DepC.unitypackage.json");
             AssertFileExistsWithMeta(basePath, "DepC", "FileC.txt");
-        }
-
-        [Fact]
-        private async Task Test_Filter()
-        {
-            // Arrange
-
-            foreach (var package in new[] { "DepA", "DepB", "DepC", "DepD" })
-            {
-                PackTool.Process(new PackTool.Options
-                {
-                    ProjectFile = TestHelper.GetDataPath(package + ".json"),
-                    OutputDirectory = TestHelper.GetOutputPath()
-                });
-            }
-
-            // Act
-
-            var restorePath = TestHelper.CreateOutputPath("Restore");
-            await RestoreTool.Process(new RestoreTool.Options
-            {
-                ProjectFile = TestHelper.GetDataPath("Filter.json"),
-                OutputDirectory = restorePath,
-                LocalRepositoryDirectory = TestHelper.GetOutputPath()
-            });
-
-            // Assert
-
-            var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
-            AssertFileExistsWithMeta(basePath, "DepA.unitypackage.json");
-            AssertFileExistsWithMeta(basePath, "DepA", "FileA.txt");
-            AssertFileExistsWithMeta(basePath, "DepB.unitypackage.json");
-            AssertFileExistsWithMeta(basePath, "DepB", "FileB.txt");
-            AssertFileExistsWithMeta(basePath, "DepC.unitypackage.json");
-            AssertFileNotExists(basePath, "DepC", "FileC.txt");
-            AssertFileExistsWithMeta(basePath, "DepD.unitypackage.json");
-            AssertFileExistsWithMeta(basePath, "DepD", "FileD.txt");
-            AssertFileNotExists(basePath, "DepD-Sample", "FileD.txt");
         }
 
         [Fact]

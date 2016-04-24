@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "Simple": { "version": "1.0.0", "source": "local", "includeExtra": true }
+  }
+}

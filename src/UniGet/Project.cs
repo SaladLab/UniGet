@@ -20,9 +20,9 @@ namespace UniGet
         public class Dependency
         {
             public string Version;          // SemVer version (e.g. 1.5.20-beta)
-            public string Source;           // Download source (local, github:author/asset, nuget:package)
-            public List<string> Includes;   // Include filters in regular expression
-            public List<string> Excludes;   // Exclude filters in regular expression ($sample$ for excluding sample directories)
+            public string Source;           // Download source (local, github:author/asset, nuget:tfm)
+            public bool IncludeExtra;       // Inlcude extra contents
+            public bool IncludeMerged;      // Include merged dependencies
         }
 
         public Dictionary<string, Dependency> Dependencies;
@@ -34,6 +34,8 @@ namespace UniGet
         {
             public string Source;
             public string Target;
+            public bool Extra;
+            public bool Merged;
         }
 
 #pragma warning restore 0649

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "files": [
     "Files/Text?.txt",
-	"Files/**/*InSubDir.txt",
-	"Files/TextWithMeta.txt",
+    { "source": "Files/**/*InSubDir.txt", "target": "$home$", "extra": true }, 
+    "Files/TextWithMeta.txt",
   ]
 }

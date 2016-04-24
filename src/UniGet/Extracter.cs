@@ -5,14 +5,17 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
+using Newtonsoft.Json.Linq;
 
 namespace UniGet
 {
     internal static class Extracter
     {
-        public static void ExtractUnityPackage(string packageFile, string outputDir, Func<string, bool> filter)
+        public static void ExtractUnityPackage(string packageFile, string outputDir, string projectId, bool includeExtra, bool includeMerged)
         {
             var tempPath = CreateTemporaryDirectory();
+
+            // unzip all files in package into temp dir
 
             using (var fileStream = new FileStream(packageFile, System.IO.FileMode.Open, FileAccess.Read))
             using (var gzipStream = new GZipInputStream(fileStream))
@@ -21,6 +24,8 @@ namespace UniGet
                 tarArchive.ExtractContents(tempPath);
                 tarArchive.Close();
             }
+
+            // reconstruct directory structure
 
             var files = new Dictionary<string, string>();
             var folders = new Dictionary<string, string>();
@@ -41,13 +46,42 @@ namespace UniGet
                     folders.Add(path, assetFile);
             }
 
+            // read project in package and get file type information
+
+            var fileMap = new Dictionary<string, Project.FileItem>();
+
+            var projectFile = $"Assets/UnityPackages/{projectId}.unitypackage.json";
+            var projectFilePath = "";
+            if (files.TryGetValue(projectFile, out projectFilePath))
+            {
+                var p = Project.Load(projectFilePath);
+                if (p.Files != null)
+                {
+                    foreach (var fileValue in p.Files)
+                    {
+                        if (fileValue is JObject)
+                        {
+                            var fileItem = fileValue.ToObject<Project.FileItem>();
+                            fileMap.Add(fileItem.Target, fileItem);
+                        }
+                        else
+                        {
+                            fileMap.Add(fileValue.ToString(), new Project.FileItem { Target = fileValue.ToString() });
+                        }
+                    }
+                }
+            }
+
             var folderForAddedFile = new HashSet<string>();
             foreach (var file in files)
             {
-                if (file.Key.EndsWith(".unitypackage.json") == false &&
-                    filter != null && filter(file.Key) == false)
+                Project.FileItem fileItem;
+                if (fileMap.TryGetValue(file.Key, out fileItem))
                 {
-                    continue;
+                    if (includeExtra == false && fileItem.Extra)
+                        continue;
+                    if (includeMerged == false && fileItem.Merged)
+                        continue;
                 }
 
                 // copy file
