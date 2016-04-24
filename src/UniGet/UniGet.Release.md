@@ -1,3 +1,7 @@
+## 0.2.3 (Released 2016/04/24)
+
+* Add file flag (extra, merged)
+
 ## 0.2.2 (Released 2016/04/24)
 
 * Support Nuget package
