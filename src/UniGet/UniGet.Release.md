@@ -1,3 +1,7 @@
+## 0.2.5 (Released 2016/04/24)
+
+* Fix missing MDB
+
 ## 0.2.4 (Released 2016/04/24)
 
 * Fix missing MDB

@@ -2,11 +2,11 @@
 using System.Reflection;
 
 [assembly: AssemblyVersionAttribute("0.0.0")]
-[assembly: AssemblyFileVersionAttribute("0.2.4")]
-[assembly: AssemblyInformationalVersionAttribute("0.2.4")]
+[assembly: AssemblyFileVersionAttribute("0.2.5")]
+[assembly: AssemblyInformationalVersionAttribute("0.2.5")]
 namespace System {
     internal static class AssemblyVersionInformation {
         internal const string Version = "0.0.0";
-        internal const string InformationalVersion = "0.2.4";
+        internal const string InformationalVersion = "0.2.5";
     }
 }
