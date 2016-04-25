@@ -29,7 +29,10 @@ Target "Build" <| fun _ ->
 
 Target "Test" <| fun _ -> testSolution solution
 
-Target "Cover" <| fun _ -> coverSolution solution
+Target "Cover" <| fun _ ->
+    coverSolutionWithParams 
+        (fun p -> { p with Filter = "+[UniGet*]* -[*.Tests]*" })
+        solution
 
 Target "PackNuget" <| fun _ -> createNugetPackages solution
 
