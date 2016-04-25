@@ -161,9 +161,9 @@ namespace UniGet
                     var project = Project.Load(projectFile);
                     if (project.MergedDependencies != null)
                     {
-                        foreach (var d in project.Dependencies)
+                        foreach (var d in project.MergedDependencies)
                         {
-                            context.PackageMap[d.Key] = new SemVer.Version(d.Value.Version);
+                            context.PackageMap[d.Key] = new SemVer.Version(d.Value.Version, true);
                         }
                     }
                     if (project.Dependencies != null)
