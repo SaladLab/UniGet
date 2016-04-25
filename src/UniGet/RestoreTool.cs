@@ -159,7 +159,7 @@ namespace UniGet
                 if (File.Exists(projectFile))
                 {
                     var project = Project.Load(projectFile);
-                    if (project.MergedDependencies != null)
+                    if (project.MergedDependencies != null && projectDependency.IncludeMerged)
                     {
                         foreach (var d in project.MergedDependencies)
                         {
