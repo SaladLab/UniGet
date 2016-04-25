@@ -1,3 +1,8 @@
+## 0.2.6 (Released 2016/04/25)
+
+* Fix wrong merged dependency
+* Prevent missing PDB exception
+
 ## 0.2.5 (Released 2016/04/24)
 
 * Fix missing MDB
