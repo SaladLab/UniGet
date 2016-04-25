@@ -1,3 +1,7 @@
+## 0.2.7 (Released 2016/04/25)
+
+* Fix missing merged projects
+
 ## 0.2.6 (Released 2016/04/25)
 
 * Fix wrong merged dependency
