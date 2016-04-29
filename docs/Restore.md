@@ -25,3 +25,7 @@ Following pacakge dependency file,
 ```
 > UniGet pack UnityPackages.json
 ```
+
+TODO: nuget, github package source
+
+TODO: LocalRepositoryDirectory

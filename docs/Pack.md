@@ -41,3 +41,17 @@ is from [TypeAlias](https://github.com/SaladLab/TypeAlias).
   "extra": true
 }
 ```
+
+
+TODO: LocalRepositoryDirectory
+
+TODO: $id$, $home$, $homebase$, $dependencies$
+default target directory
+auto meta generation
+mdb generation
+Id and version
+
+Common way to download package vs restore
+normal, merged, extra
+
+github upload
