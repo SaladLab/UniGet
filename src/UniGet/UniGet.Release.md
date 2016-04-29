@@ -1,3 +1,7 @@
+## 0.2.8 (Released 2016/04/29)
+
+* Fix duplicate package restore error
+
 ## 0.2.7 (Released 2016/04/25)
 
 * Fix missing merged projects
