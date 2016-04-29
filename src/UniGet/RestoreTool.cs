@@ -72,7 +72,10 @@ namespace UniGet
             };
             foreach (var d in p.Dependencies)
             {
-                await ProcessRecursive(d.Key, d.Value, context);
+                if (context.PackageMap.ContainsKey(d.Key) == false)
+                {
+                    await ProcessRecursive(d.Key, d.Value, context);
+                }
             }
 
             return packageMap;
