@@ -16,6 +16,24 @@ or you can download it via Nuget.
 > nuget.exe install UniGet
 ```
 
+## Overview
+
+Unity3D doens't provide two things that I want to have:
+
+- Transitive package restore:
+  Without this, it's really painful to import all packages that my project
+  depends on.
+
+- Dedicated package building tool:
+  Only UnityEditor can build an UnityPackage. Basically it's ok. But When you
+  consider using common CI for building package files, it becomes a hard problem.
+  There must be a console tool for building package for solving this problem.
+
+To meet these requirements, A project meta file is added to normal UnityPackage and
+special console tool **UniGet** has been built.
+
+[Package Overview](./docs/Package.md)
+
 ## Features
 
 Only essential features like pack and restore are served.
