@@ -35,9 +35,6 @@ namespace UniGet
             var result = parser.ParseArguments<Options>(args)
                                .WithParsed(r => { options = r; });
 
-            Console.WriteLine(options.ProjectFile);
-            Console.WriteLine(options.OutputDirectory);
-
             // Run process !
 
             if (options != null)
