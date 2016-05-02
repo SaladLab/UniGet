@@ -21,6 +21,9 @@ namespace UniGet
 
             [Option('l', "local", HelpText = "Specifies the directory for the local repository.")]
             public string LocalRepositoryDirectory { get; set; }
+
+            [Option('r', "remove", HelpText = "Remove all installed packages before restoring.")]
+            public bool Remove { get; set; }
         }
 
         public static int Run(params string[] args)
@@ -35,8 +38,6 @@ namespace UniGet
             Options options = null;
             var result = parser.ParseArguments<Options>(args)
                                .WithParsed(r => { options = r; });
-
-            Console.WriteLine(options.ProjectFile);
 
             // Run process !
 
@@ -53,6 +54,16 @@ namespace UniGet
 
         internal static async Task<Dictionary<string, SemVer.Version>> Process(Options options)
         {
+            if (options.Remove)
+            {
+                var ret = RemoveTool.Process(new RemoveTool.Options
+                {
+                    ProjectDir = Path.GetDirectoryName(options.ProjectFile)
+                });
+                if (ret != 0)
+                    throw new InvalidOperationException($"Cannot remove package: result code={ret}");
+            }
+
             var p = Project.Load(options.ProjectFile);
             var projectDir = Path.GetDirectoryName(options.ProjectFile);
             var outputDir = options.OutputDirectory ?? projectDir;

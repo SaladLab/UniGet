@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="PackTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RemoveTest.cs" />
     <Compile Include="RestoreTest.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
