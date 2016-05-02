@@ -53,6 +53,10 @@ namespace UniGet
             var target = $"Assets/UnityPackages/{packageId}";
             var targetDir = Path.Combine(outputDir, target);
             Directory.CreateDirectory(targetDir);
+            File.WriteAllBytes(targetDir + ".meta",
+                               Packer.GenerateMeta(".", target).Item2);
+
+            Packer.GenerateMeta(".", target);
 
             foreach (var file in Directory.GetFiles(libPath, "*.dll"))
             {
