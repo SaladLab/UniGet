@@ -1,3 +1,8 @@
+## 0.3.0 (Released 2016/05/02)
+
+* Dependency Resolution following NuGet semantics. 
+* Feature to remove all installed packages.
+
 ## 0.2.8 (Released 2016/04/29)
 
 * Fix duplicate package restore error
