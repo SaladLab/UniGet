@@ -1,7 +1,8 @@
 ## UniGet Restore
 
-Following pacakge dependency file,
+Following package dependency file,
 [UnityPackages.json](https://github.com/SaladLab/TicTacToe/blob/master/src/GameClient/UnityPackages.json) is from [TicTacToe](https://github.com/SaladLab/TicTacToe).
+This package files should be placed at the top-most directory of Unity project.
 
 ```json
 {
@@ -22,10 +23,8 @@ Following pacakge dependency file,
 }
 ```
 
-```
-> UniGet pack UnityPackages.json
-```
+Following command will download all libraries listed on a package file.
 
-TODO: nuget, github package source
-
-TODO: LocalRepositoryDirectory
+```
+> UniGet restore UnityPackages.json
+```

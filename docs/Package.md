@@ -24,12 +24,12 @@ UnityPackage.
 
 Regular unity-package contains normal files and when importing it all files
 are extracted and imported to your project. But uniget-package sets flags for
-every files as following:
+every file as following:
 
 - Normal: Most essential files. e.g. Sources, DLLs for running library.
 - Extra: Additional files. e.g. Sample, Documentation and so on.
 - Merged: Merged library files which this uniget-package depends on.
-  When an uniget-package with merged libary is imported, every required files
+  When an uniget-package with merged libary is imported, all required files
   are in place.
 
 ### Project file
@@ -119,7 +119,7 @@ NuGet repository is the biggest one in .NET ecosystem
 but there are problems for using NuGet as a uniget-package source.
 
 Unity3D requires
-- Meta files for every source files.
+- Meta files for all source files.
 - Other files like prefab could be contained in a package.
 - Dedicated target framework moniker.
 
