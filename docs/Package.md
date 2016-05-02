@@ -126,6 +126,7 @@ Unity3D requires
 But NuGet doesn't support them. So instead of using NuGet for uploading
 uniget-package, just use it as a secondary repository for downloading NuGet
 package which Unity3D can understand.
+NuGet source doesn't provide transitive package restore.
 
 Following json accesses [nuget/protobuf-net/2.0.0.668](https://www.nuget.org/packages/protobuf-net/2.0.0.668)
 package.

@@ -113,6 +113,138 @@ namespace UniGet.Tests
         }
 
         [Fact]
+        private async Task Test_Lowest()
+        {
+            // Arrange
+
+            foreach (var package in new[] { "DepY.1.0.0", "DepY.1.1.0" })
+            {
+                PackTool.Process(new PackTool.Options
+                {
+                    ProjectFile = TestHelper.GetDataPath(package + ".json"),
+                    OutputDirectory = TestHelper.GetOutputPath()
+                });
+            }
+
+            // Act
+
+            var restorePath = TestHelper.CreateOutputPath("Restore");
+            await RestoreTool.Process(new RestoreTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("ProjectDepY_Lowest.json"),
+                OutputDirectory = restorePath,
+                LocalRepositoryDirectory = TestHelper.GetOutputPath()
+            });
+
+            // Assert
+
+            var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
+            AssertFileExistsWithMeta(basePath, "DepY.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepY", "FileY.txt");
+        }
+
+        [Fact]
+        private async Task Test_Floating()
+        {
+            // Arrange
+
+            foreach (var package in new[] { "DepY.1.0.0", "DepY.1.1.0" })
+            {
+                PackTool.Process(new PackTool.Options
+                {
+                    ProjectFile = TestHelper.GetDataPath(package + ".json"),
+                    OutputDirectory = TestHelper.GetOutputPath()
+                });
+            }
+
+            // Act
+
+            var restorePath = TestHelper.CreateOutputPath("Restore");
+            await RestoreTool.Process(new RestoreTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("ProjectDepY_Floating.json"),
+                OutputDirectory = restorePath,
+                LocalRepositoryDirectory = TestHelper.GetOutputPath()
+            });
+
+            // Assert
+
+            var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
+            AssertFileExistsWithMeta(basePath, "DepY.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepY", "FileYv110.txt");
+        }
+
+        [Fact]
+        private async Task Test_Recursive_NearestWin()
+        {
+            // Arrange:
+            // Project -> DepX 1.x -> DepY >=1.0
+            //         -> DepY 1.x
+            // - Available DepY: 1.0, 1.1
+
+            foreach (var package in new[] { "DepX.1.0.0", "DepY.1.0.0", "DepY.1.1.0" })
+            {
+                PackTool.Process(new PackTool.Options
+                {
+                    ProjectFile = TestHelper.GetDataPath(package + ".json"),
+                    OutputDirectory = TestHelper.GetOutputPath()
+                });
+            }
+
+            // Act
+
+            var restorePath = TestHelper.CreateOutputPath("Restore");
+            await RestoreTool.Process(new RestoreTool.Options
+            {
+                ProjectFile = TestHelper.GetDataPath("ProjectDepX_Y.json"),
+                OutputDirectory = restorePath,
+                LocalRepositoryDirectory = TestHelper.GetOutputPath()
+            });
+
+            // Assert
+
+            var basePath = Path.Combine(restorePath, "Assets", "UnityPackages");
+            AssertFileExistsWithMeta(basePath, "DepX.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepX", "FileX.txt");
+            AssertFileExistsWithMeta(basePath, "DepY.unitypackage.json");
+            AssertFileExistsWithMeta(basePath, "DepY", "FileYv110.txt");
+        }
+
+        [Fact]
+        private async Task Test_Recursive_NearestWin_ConflictVersion()
+        {
+            // Arrange:
+            // Project -> DepX 1.x -> DepY >=1.0
+            //         -> DepY <=0.9
+            // - Available DepY: 0.9, 1.0
+
+            foreach (var package in new[] { "DepX.1.0.0", "DepY.0.9.0", "DepY.1.0.0" })
+            {
+                PackTool.Process(new PackTool.Options
+                {
+                    ProjectFile = TestHelper.GetDataPath(package + ".json"),
+                    OutputDirectory = TestHelper.GetOutputPath()
+                });
+            }
+
+            // Act
+
+            var restorePath = TestHelper.CreateOutputPath("Restore");
+            var e = await Record.ExceptionAsync(() =>
+                RestoreTool.Process(new RestoreTool.Options
+                {
+                    ProjectFile = TestHelper.GetDataPath("ProjectDepX_Y_Conflict.json"),
+                    OutputDirectory = restorePath,
+                    LocalRepositoryDirectory = TestHelper.GetOutputPath()
+                }));
+
+            // Assert
+
+            Assert.NotNull(e);
+            Assert.IsType<InvalidDataException>(e);
+        }
+
+        [Fact]
         private async Task Test_GithubPackage()
         {
             // Act

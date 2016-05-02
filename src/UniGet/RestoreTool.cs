@@ -68,14 +68,14 @@ namespace UniGet
             {
                 Options = options,
                 OutputDir = outputDir,
-                PackageMap = packageMap
+                PackageMap = packageMap,
+                DepQueue = new Queue<KeyValuePair<string, Project.Dependency>>(p.Dependencies)
             };
-            foreach (var d in p.Dependencies)
+
+            while (context.DepQueue.Any())
             {
-                if (context.PackageMap.ContainsKey(d.Key) == false)
-                {
-                    await ProcessRecursive(d.Key, d.Value, context);
-                }
+                var item = context.DepQueue.Dequeue();
+                await ProcessStep(item.Key, item.Value, context);
             }
 
             return packageMap;
@@ -86,15 +86,25 @@ namespace UniGet
             public Options Options;
             public string OutputDir;
             public Dictionary<string, SemVer.Version> PackageMap;
+            public Queue<KeyValuePair<string, Project.Dependency>> DepQueue;
         }
 
-        private static async Task ProcessRecursive(string projectId, Project.Dependency projectDependency, ProcessContext context)
+        private static async Task ProcessStep(string projectId, Project.Dependency projectDependency, ProcessContext context)
         {
-            Console.WriteLine("Restore: " + projectId);
+            var versionRange = new SemVer.Range(projectDependency.Version, true);
+
+            // if already resolved dependency, skip it
+
+            if (context.PackageMap.ContainsKey(projectId))
+            {
+                if (versionRange.IsSatisfied(context.PackageMap[projectId]) == false)
+                    throw new InvalidDataException($"Cannot meet version requirement: {projectId} {projectDependency.Version} (but {context.PackageMap[projectId]})");
+                return;
+            }
 
             // download package
 
-            var versionRange = new SemVer.Range(projectDependency.Version);
+            Console.WriteLine("Restore: " + projectId);
 
             var packageFile = "";
             var packageVersion = new SemVer.Version(0, 0, 0);
@@ -103,11 +113,11 @@ namespace UniGet
             if (projectDependency.Source != "local" && string.IsNullOrEmpty(context.Options.LocalRepositoryDirectory) == false)
             {
                 var packages = LocalPackage.GetPackages(context.Options.LocalRepositoryDirectory, projectId);
-                var package = packages.Where(p => versionRange.IsSatisfied(p.Item2)).OrderBy(p => p.Item2).LastOrDefault();
-                if (package != null)
+                var versionIndex = versionRange.GetSatisfiedVersionIndex(packages.Select(x => x.Item2).ToList());
+                if (versionIndex != -1)
                 {
-                    packageFile = package.Item1;
-                    packageVersion = package.Item2;
+                    packageFile = packages[versionIndex].Item1;
+                    packageVersion = packages[versionIndex].Item2;
                 }
             }
 
@@ -117,12 +127,12 @@ namespace UniGet
             else if (projectDependency.Source == "local")
             {
                 var packages = LocalPackage.GetPackages(context.Options.LocalRepositoryDirectory ?? "", projectId);
-                var package = packages.Where(p => versionRange.IsSatisfied(p.Item2)).OrderBy(p => p.Item2).LastOrDefault();
-                if (package == null)
+                var versionIndex = versionRange.GetSatisfiedVersionIndex(packages.Select(x => x.Item2).ToList());
+                if (versionIndex == -1)
                     throw new InvalidOperationException("Cannot find package from local repository: " + projectId);
 
-                packageFile = package.Item1;
-                packageVersion = package.Item2;
+                packageFile = packages[versionIndex].Item1;
+                packageVersion = packages[versionIndex].Item2;
             }
             else if (projectDependency.Source.StartsWith("github:"))
             {
@@ -166,18 +176,14 @@ namespace UniGet
                     {
                         foreach (var d in project.MergedDependencies)
                         {
-                            context.PackageMap[d.Key] = new SemVer.Version(d.Value.Version, true);
+                            if (context.PackageMap.ContainsKey(d.Key) == false)
+                                context.PackageMap[d.Key] = new SemVer.Version(d.Value.Version, true);
                         }
                     }
                     if (project.Dependencies != null)
                     {
                         foreach (var d in project.Dependencies)
-                        {
-                            if (context.PackageMap.ContainsKey(d.Key) == false)
-                            {
-                                await ProcessRecursive(d.Key, d.Value, context);
-                            }
-                        }
+                            context.DepQueue.Enqueue(d);
                     }
                 }
             }

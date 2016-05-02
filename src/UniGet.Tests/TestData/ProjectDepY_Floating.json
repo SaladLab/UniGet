@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "DepY": { "version": "1.*", "source": "local" }
+  }
+}

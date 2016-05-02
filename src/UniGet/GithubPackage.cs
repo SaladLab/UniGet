@@ -15,10 +15,10 @@ namespace UniGet
             string owner, string repoName, string projectId, SemVer.Range versionRange, bool force = false)
         {
             var packages = await FetchPackagesAsync(owner, repoName, projectId);
-            var package = packages.Where(p => versionRange.IsSatisfied(p.Item2))
-                                  .OrderBy(r => r.Item2).LastOrDefault();
-            if (package == null)
+            var versionIndex = versionRange.GetSatisfiedVersionIndex(packages.Select(p => p.Item2).ToList());
+            if (versionIndex == -1)
                 throw new ArgumentException("Cannot find a package matched version range.");
+            var package = packages[versionIndex];
 
             var cacheRootPath = GetPackageCacheRoot();
             if (Directory.Exists(cacheRootPath) == false)

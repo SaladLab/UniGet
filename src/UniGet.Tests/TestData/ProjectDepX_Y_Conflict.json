@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "DepX": { "version": "1.*", "source": "local" },
+    "DepY": { "version": "<=0.9", "source": "local" }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "DepX",
+  "version": "1.0.0",
+  "dependencies": {
+    "DepY": { "version": ">=1.0.0", "source": "local" }
+  },
+  "files": [
+    "Files/FileX.txt"
+  ]
+}
