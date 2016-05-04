@@ -39,14 +39,21 @@ namespace UniGet
 
         internal static int Process(Options options)
         {
-            var baseDir = Path.Combine(options.ProjectDir, "Assets", "UnityPackages");
-            if (Directory.Exists(baseDir) == false)
+            var assetsDir = Path.Combine(options.ProjectDir, "Assets");
+            if (Directory.Exists(assetsDir) == false)
             {
-                Console.WriteLine($"Cannot find {baseDir}.");
+                Console.WriteLine($"Cannot find {assetsDir}.");
                 return 1;
             }
 
-            foreach (var packageFile in Directory.GetFiles(baseDir, "*.unitypackage.json"))
+            var packageBaseDir = Path.Combine(assetsDir, "UnityPackages");
+            if (Directory.Exists(packageBaseDir) == false)
+            {
+                // UnityPackages is empty
+                return 0;
+            }
+
+            foreach (var packageFile in Directory.GetFiles(packageBaseDir, "*.unitypackage.json"))
             {
                 if (File.Exists(packageFile) == false)
                     continue;
@@ -83,7 +90,7 @@ namespace UniGet
                     File.Delete(packageFile + ".meta");
             }
 
-            RemoveEmptyFolder(baseDir);
+            RemoveEmptyFolder(packageBaseDir);
 
             return 0;
         }
