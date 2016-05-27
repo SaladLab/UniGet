@@ -1,3 +1,7 @@
+## 0.3.1 (Released 2016/05/27)
+
+* Set version of uniget.exe 3.4.3 to make nuget version detector happy.
+ 
 ## 0.3.0 (Released 2016/05/02)
 
 * Dependency Resolution following NuGet semantics. 
