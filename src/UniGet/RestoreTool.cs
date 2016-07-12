@@ -32,11 +32,6 @@ namespace UniGet
         public static int Run(params string[] args)
         {
             var parser = new Parser(config => config.HelpWriter = Console.Out);
-            if (args.Length == 0)
-            {
-                parser.ParseArguments<Options>(new[] { "--help" });
-                return 1;
-            }
 
             Options options = null;
             var result = parser.ParseArguments<Options>(args)
