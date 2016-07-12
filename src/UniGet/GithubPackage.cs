@@ -12,9 +12,9 @@ namespace UniGet
     internal static class GithubPackage
     {
         public static async Task<Tuple<string, SemVer.Version>> DownloadPackageAsync(
-            string owner, string repoName, string projectId, SemVer.Range versionRange, bool force = false)
+            string owner, string repoName, string projectId, SemVer.Range versionRange, string userToken = null, bool force = false)
         {
-            var packages = await FetchPackagesAsync(owner, repoName, projectId);
+            var packages = await FetchPackagesAsync(owner, repoName, projectId, userToken: userToken);
             var versionIndex = versionRange.GetSatisfiedVersionIndex(packages.Select(p => p.Item2).ToList());
             if (versionIndex == -1)
                 throw new ArgumentException("Cannot find a package matched version range.");
@@ -51,11 +51,14 @@ namespace UniGet
             return Path.Combine(Environment.GetEnvironmentVariable("APPDATA"), "uniget");
         }
 
-        public static async Task<List<Tuple<string, SemVer.Version>>> FetchPackagesAsync(string owner, string repoName, string projectId)
+        public static async Task<List<Tuple<string, SemVer.Version>>> FetchPackagesAsync(string owner, string repoName, string projectId, string userToken = null)
         {
             var packages = new List<Tuple<string, SemVer.Version>>();
 
             var client = new GitHubClient(new ProductHeaderValue("uniget"));
+            if (userToken != null)
+                client.Credentials = new Credentials(userToken);
+
             var githubReleases = await client.Repository.Release.GetAll(owner, repoName);
             foreach (var release in githubReleases)
             {
