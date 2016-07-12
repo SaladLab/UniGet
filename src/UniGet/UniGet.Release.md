@@ -1,3 +1,8 @@
+## 0.3.2 (Released 2016/07/12)
+
+* Support github token option to get higher api limit rate.
+* When restore, use 'UnityPackages.json' as a default project file.
+
 ## 0.3.1 (Released 2016/05/27)
 
 * Set version of uniget.exe 3.4.3 to make nuget version detector happy.
