@@ -1,3 +1,7 @@
+## 0.3.3 (Released 2016/07/12)
+
+* Fix restore option parsing error
+
 ## 0.3.2 (Released 2016/07/12)
 
 * Support github token option to get higher api limit rate.
