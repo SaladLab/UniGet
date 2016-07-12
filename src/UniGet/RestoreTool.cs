@@ -13,7 +13,7 @@ namespace UniGet
     {
         internal class Options
         {
-            [Value(0, Required = true, HelpText = "Project File")]
+            [Value(0, Default = "UnityPackages.json", HelpText = "Project File")]
             public string ProjectFile { get; set; }
 
             [Option('o', "output", HelpText = "Specifies the directory for the created unity package file. If not specified, uses the current directory.")]
@@ -24,6 +24,9 @@ namespace UniGet
 
             [Option('r', "remove", HelpText = "Remove all installed packages before restoring.")]
             public bool Remove { get; set; }
+
+            [Option('t', "token", HelpText = "Github Token for dealing with rate limit exceed problem.")]
+            public string Token { get; set; }
         }
 
         public static int Run(params string[] args)
@@ -151,7 +154,7 @@ namespace UniGet
                 if (parts.Length != 2)
                     throw new InvalidDataException("Cannot determine github repo information from url: " + projectDependency.Source);
 
-                var r = await GithubPackage.DownloadPackageAsync(parts[0], parts[1], projectId, versionRange);
+                var r = await GithubPackage.DownloadPackageAsync(parts[0], parts[1], projectId, versionRange, context.Options.Token);
                 packageFile = r.Item1;
                 packageVersion = r.Item2;
             }
