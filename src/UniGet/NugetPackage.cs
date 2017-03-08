@@ -7,7 +7,7 @@ namespace UniGet
     {
         public static string GetPackageCacheRoot()
         {
-            return Path.Combine(Environment.GetEnvironmentVariable("APPDATA"), "uniget", "nuget");
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "uniget", "nuget");
         }
 
         public static Tuple<string, SemVer.Version> DownloadPackage(

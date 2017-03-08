@@ -106,8 +106,8 @@ namespace UniGet
 
             if (ok && Directory.GetFiles(path).Any() == false)
             {
+                var metaFile = Path.GetFullPath(Path.Combine(path, "..", Path.GetFileName(path))) + ".meta";
                 Directory.Delete(path);
-                var metaFile = Path.Combine(path, "..", Path.GetFileName(path)) + ".meta";
                 if (File.Exists(metaFile))
                     File.Delete(metaFile);
                 return true;

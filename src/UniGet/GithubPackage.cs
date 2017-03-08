@@ -48,7 +48,7 @@ namespace UniGet
 
         public static string GetPackageCacheRoot()
         {
-            return Path.Combine(Environment.GetEnvironmentVariable("APPDATA"), "uniget");
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "uniget");
         }
 
         public static async Task<List<Tuple<string, SemVer.Version>>> FetchPackagesAsync(string owner, string repoName, string projectId, string userToken = null)
